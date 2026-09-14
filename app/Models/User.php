@@ -3,8 +3,12 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -21,7 +25,15 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
+        'avatar_path',
+        'role',
+        'is_blocked',
+        'blocked_reason',
+        'dp_suspended_until',
+        'admin_notes',
         'password',
+        'google_id',
     ];
 
     /**
@@ -32,6 +44,8 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'google_id',
+        'admin_notes',
     ];
 
     /**
@@ -42,8 +56,56 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            'role' => UserRole::class,
+            'is_blocked' => 'boolean',
             'email_verified_at' => 'datetime',
+            'dp_suspended_until' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    public function payments(): HasManyThrough
+    {
+        return $this->hasManyThrough(Payment::class, Booking::class);
+    }
+
+    public function invoices(): HasManyThrough
+    {
+        return $this->hasManyThrough(Invoice::class, Booking::class);
+    }
+
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(ActivityLog::class);
+    }
+
+    public function scopeCustomers(Builder $query): void
+    {
+        $query->where('role', UserRole::Customer);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === UserRole::Admin;
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->role === UserRole::Staff;
+    }
+
+    /**
+     * BR-DP1 & BR-DP8: member terverifikasi, tidak diblokir, dan akses DP tidak sedang dicabut.
+     */
+    public function canUseDp(): bool
+    {
+        return $this->hasVerifiedEmail()
+            && ! $this->is_blocked
+            && ($this->dp_suspended_until === null || $this->dp_suspended_until->isPast());
     }
 }
