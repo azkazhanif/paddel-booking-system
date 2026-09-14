@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\CourtType;
 use App\Enums\PriceLabel;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -76,6 +77,54 @@ class Court extends Model
     public function scopeActive(Builder $query): void
     {
         $query->where('is_active', true);
+    }
+
+    /**
+     * Daftar slot pada tanggal tertentu beserta statusnya: available, booked, blocked, atau past.
+     *
+     * @return list<array{start_time: string, end_time: string, status: string}>
+     */
+    public function slotsOn(CarbonInterface $date): array
+    {
+        $date = CarbonImmutable::parse($date->toDateString(), Booking::TIMEZONE);
+        $hours = OperatingHour::query()->where('day_of_week', $date->isoWeekday())->first();
+
+        if (! $hours || $hours->is_closed || in_array($date->toDateString(), Setting::get('booking.closures', []), true)) {
+            return [];
+        }
+
+        $duration = (int) Setting::get('booking.slot_duration_minutes', 60);
+        $now = now(Booking::TIMEZONE);
+
+        $booked = $this->bookingItems()
+            ->whereDate('date', $date->toDateString())
+            ->where('is_active', true)
+            ->pluck('start_time')
+            ->map(fn (string $time) => date('H:i:s', strtotime($time)))
+            ->all();
+
+        $blocks = $this->slotBlocks()->whereDate('date', $date->toDateString())->get(['start_time', 'end_time']);
+
+        $slots = [];
+        $start = $date->setTimeFromTimeString($hours->open_time);
+        $close = $date->setTimeFromTimeString($hours->close_time);
+
+        while ($start->addMinutes($duration)->lte($close)) {
+            $end = $start->addMinutes($duration);
+            $startTime = $start->format('H:i:s');
+
+            $status = match (true) {
+                $start->lte($now) => 'past',
+                in_array($startTime, $booked, true) => 'booked',
+                $blocks->contains(fn (SlotBlock $block) => $block->start_time <= $startTime && $block->end_time > $startTime) => 'blocked',
+                default => 'available',
+            };
+
+            $slots[] = ['start_time' => $startTime, 'end_time' => $end->format('H:i:s'), 'status' => $status];
+            $start = $end;
+        }
+
+        return $slots;
     }
 
     /**

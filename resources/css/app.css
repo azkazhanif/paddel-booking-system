@@ -1,3 +1,59 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/forms';
+
+@source '../views';
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Clash Grotesk', 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+
+    --color-ink-950: #050605;
+    --color-ink-900: #0b0d0b;
+    --color-ink-800: #141714;
+    --color-ink-700: #1f241f;
+    --color-ink-400: #8a938b;
+    --color-bone-50: #f4f6f2;
+    --color-court-900: #0a2e1f;
+    --color-court-700: #0f5c3a;
+    --color-court-500: #1ed760;
+    --color-court-400: #4be38a;
+    --color-lime-300: #c8f560;
+
+    --radius-md: 0.375rem;
+
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+    html {
+        background-color: var(--color-ink-950);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    ::selection {
+        background: var(--color-court-500);
+        color: var(--color-ink-950);
+    }
+}
+
+/* Section tone: warna fallback tanpa JS; saat transisi warna GSAP aktif, section (kecuali solid) menjadi transparan */
+.theme-ready [data-bg] {
+    background-color: transparent;
+}
+
+@media (pointer: fine) {
+    .has-custom-cursor,
+    .has-custom-cursor a,
+    .has-custom-cursor button {
+        cursor: none;
+    }
+}
+
+.court-stripes {
+    background-image: repeating-linear-gradient(
+        135deg,
+        transparent 0 10px,
+        rgb(255 255 255 / 0.04) 10px 20px
+    );
+}
