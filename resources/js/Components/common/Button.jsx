@@ -1,6 +1,7 @@
 import { scrollToTarget } from '@/lib/gsap';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
+import { LoaderCircle } from 'lucide-react';
 
 const VARIANTS = {
     primary: 'bg-court-500 text-ink-950 [--fill:var(--color-bone-50)]',
@@ -25,6 +26,7 @@ export default function Button({
     variant = 'primary',
     size = 'md',
     icon: Icon,
+    loading = false,
     className,
     children,
     cursor,
@@ -32,7 +34,7 @@ export default function Button({
     ...props
 }) {
     const classes = cn(
-        'group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full font-semibold whitespace-nowrap transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-court-500',
+        'group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full font-semibold whitespace-nowrap transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-court-500 disabled:pointer-events-none disabled:opacity-60',
         VARIANTS[variant],
         SIZES[size],
         className,
@@ -45,7 +47,8 @@ export default function Button({
                 className="absolute inset-0 translate-y-full rounded-full bg-(--fill) transition-transform duration-500 ease-out-expo group-hover:translate-y-0"
             />
             <span className="relative">{children}</span>
-            {Icon && (
+            {loading && <LoaderCircle aria-hidden className="relative size-4 animate-spin" />}
+            {Icon && !loading && (
                 <Icon
                     aria-hidden
                     className="relative size-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-rotate-45"
@@ -89,7 +92,7 @@ export default function Button({
     }
 
     return (
-        <button type="button" data-cursor={cursor} className={classes} onClick={onClick} {...props}>
+        <button type="button" data-cursor={cursor} className={classes} onClick={onClick} aria-busy={loading || undefined} {...props}>
             {content}
         </button>
     );

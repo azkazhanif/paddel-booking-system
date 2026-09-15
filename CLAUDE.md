@@ -203,18 +203,21 @@ resources/js/
 │   ├── home/          # section homepage: Hero, CourtsShowcase, HowItWorks, MemberBenefits, dst.
 │   ├── booking/       # DateScroller, CourtPicker, SlotGrid, GuestForm, PaymentOptionCard,
 │   │                  # PaymentSummary, CountdownTimer, ETicket
+│   ├── form/          # FormField, TextField, PasswordField, PasswordStrength, CheckboxField
+│   ├── auth/          # AuthAside, MemberHighlight
 │   ├── invoice/       # InvoiceView
 │   └── admin/         # KpiCard, ChartCard, DataTable, FilterBar, OccupancyHeatmap
-├── Layouts/           # PublicLayout, AppLayout (member), AdminLayout, GuestLayout (auth)
+├── Layouts/           # PublicLayout (homepage), AuthLayout (login/register), AppLayout (member), AdminLayout
 ├── Pages/             # mengikuti nama di Inertia::render, mis. Pages/Booking/Create.jsx
-├── hooks/             # useCountdown, useAvailability, useMediaQuery
+├── hooks/             # useFormField (bind field ke useForm Inertia), useIntro, useCountdown, useAvailability
 └── lib/               # gsap.js (register plugin), utils.js (cn), format.js (rupiah, tanggal)
 ```
 
 Konvensi:
 - Nama file & komponen **PascalCase**, satu komponen utama per file, `export default`.
 - Terima `className` dan gabungkan dengan `cn()` agar komponen fleksibel.
-- Form memakai `useForm` dari `@inertiajs/react`; navigasi memakai `<Link>` + `route()`.
+- Form memakai `useForm` dari `@inertiajs/react` + hook `useFormField(form)` untuk mengikat field (`<TextField id="email" {...field('email')} />`); navigasi memakai `<Link>` + `route()`.
+- Route yang belum dibuat dirujuk lewat `safeRoute('nama.route', fallback)` agar link tidak error.
 - Format uang/tanggal hanya lewat `lib/format.js` (`formatRupiah(350000)` → `Rp350.000`).
 - Teks UI berbahasa Indonesia.
 
@@ -268,4 +271,4 @@ Aturan:
 - Radius selain `rounded-md` / `rounded-full`; font serif.
 - Menaruh logika harga/DP di frontend sebagai sumber kebenaran.
 - Menyimpan secret Midtrans (server key) di kode frontend atau commit `.env`.
-- Mengubah file bawaan Breeze di `Controllers/Auth` tanpa kebutuhan jelas.
+- Mengubah file bawaan Breeze di `Controllers/Auth` tanpa kebutuhan jelas (komponen & halaman frontend bawaan Breeze sudah diganti).

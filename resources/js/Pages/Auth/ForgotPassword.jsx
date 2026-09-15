@@ -1,55 +1,57 @@
-import InputError from '@/Components/InputError';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, useForm } from '@inertiajs/react';
+import Reveal from '@/Components/animation/Reveal';
+import Button from '@/Components/common/Button';
+import StatusMessage from '@/Components/common/StatusMessage';
+import TextLink from '@/Components/common/TextLink';
+import TextField from '@/Components/form/TextField';
+import { useFormField } from '@/hooks/useFormField';
+import AuthLayout from '@/Layouts/AuthLayout';
+import { useForm } from '@inertiajs/react';
+import { Mail, Send } from 'lucide-react';
 
 export default function ForgotPassword({ status }) {
-    const { data, setData, post, processing, errors } = useForm({
-        email: '',
-    });
+    const form = useForm({ email: '' });
+    const field = useFormField(form);
 
-    const submit = (e) => {
-        e.preventDefault();
-
-        post(route('password.email'));
+    const submit = (event) => {
+        event.preventDefault();
+        form.post(route('password.email'));
     };
 
     return (
-        <GuestLayout>
-            <Head title="Forgot Password" />
+        <AuthLayout
+            title="Lupa Password"
+            eyebrow="Reset password"
+            heading="Lupa password?"
+            description="Masukkan email akunmu. Kami akan mengirim link untuk membuat password baru."
+            aside={{
+                title: 'No stress, reset fast.',
+                benefits: ['Link reset dikirim ke email', 'Booking & DP kamu tetap aman', 'Kembali main dalam hitungan menit'],
+            }}
+            footer={
+                <p>
+                    Ingat password? <TextLink href={route('login')}>Kembali masuk</TextLink>
+                </p>
+            }
+        >
+            <StatusMessage className="mb-6">{status}</StatusMessage>
 
-            <div className="mb-4 text-sm text-gray-600">
-                Forgot your password? No problem. Just let us know your email
-                address and we will email you a password reset link that will
-                allow you to choose a new one.
-            </div>
-
-            {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
-
-            <form onSubmit={submit}>
-                <TextInput
-                    id="email"
-                    type="email"
-                    name="email"
-                    value={data.email}
-                    className="mt-1 block w-full"
-                    isFocused={true}
-                    onChange={(e) => setData('email', e.target.value)}
-                />
-
-                <InputError message={errors.email} className="mt-2" />
-
-                <div className="mt-4 flex items-center justify-end">
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Email Password Reset Link
-                    </PrimaryButton>
-                </div>
+            <form onSubmit={submit} noValidate>
+                <Reveal y={24} stagger={0.07} delay={0.1} className="flex flex-col gap-5">
+                    <TextField
+                        id="email"
+                        type="email"
+                        label="Email"
+                        icon={Mail}
+                        placeholder="nama@email.com"
+                        autoComplete="email"
+                        autoFocus
+                        {...field('email')}
+                    />
+                    <Button type="submit" size="lg" icon={Send} loading={form.processing} disabled={form.processing} className="w-full">
+                        Kirim Link Reset
+                    </Button>
+                </Reveal>
             </form>
-        </GuestLayout>
+        </AuthLayout>
     );
 }

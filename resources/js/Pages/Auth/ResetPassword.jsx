@@ -1,94 +1,68 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, useForm } from '@inertiajs/react';
+import Reveal from '@/Components/animation/Reveal';
+import Button from '@/Components/common/Button';
+import PasswordField from '@/Components/form/PasswordField';
+import TextField from '@/Components/form/TextField';
+import { useFormField } from '@/hooks/useFormField';
+import AuthLayout from '@/Layouts/AuthLayout';
+import { useForm } from '@inertiajs/react';
+import { ArrowUpRight, Mail } from 'lucide-react';
 
 export default function ResetPassword({ token, email }) {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        token: token,
-        email: email,
+    const form = useForm({
+        token,
+        email,
         password: '',
         password_confirmation: '',
     });
+    const field = useFormField(form);
 
-    const submit = (e) => {
-        e.preventDefault();
-
-        post(route('password.store'), {
-            onFinish: () => reset('password', 'password_confirmation'),
-        });
+    const submit = (event) => {
+        event.preventDefault();
+        form.post(route('password.store'), { onFinish: () => form.reset('password', 'password_confirmation') });
     };
 
     return (
-        <GuestLayout>
-            <Head title="Reset Password" />
-
-            <form onSubmit={submit}>
-                <div>
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
+        <AuthLayout
+            title="Reset Password"
+            eyebrow="Reset password"
+            heading="Buat password baru."
+            description="Gunakan password yang kuat dan belum pernah kamu pakai sebelumnya."
+            aside={{
+                title: 'Almost back in the game.',
+                benefits: ['Minimal 8 karakter', 'Kombinasikan huruf besar, kecil & angka', 'Jangan bagikan password ke siapa pun'],
+            }}
+        >
+            <form onSubmit={submit} noValidate>
+                <Reveal y={24} stagger={0.07} delay={0.1} className="flex flex-col gap-5">
+                    <TextField
                         id="email"
                         type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
+                        label="Email"
+                        icon={Mail}
                         autoComplete="username"
-                        onChange={(e) => setData('email', e.target.value)}
+                        {...field('email')}
                     />
-
-                    <InputError message={errors.email} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
-
-                    <TextInput
+                    <PasswordField
                         id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
+                        label="Password baru"
+                        placeholder="Minimal 8 karakter"
                         autoComplete="new-password"
-                        isFocused={true}
-                        onChange={(e) => setData('password', e.target.value)}
+                        autoFocus
+                        showStrength
+                        {...field('password')}
                     />
-
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel
-                        htmlFor="password_confirmation"
-                        value="Confirm Password"
-                    />
-
-                    <TextInput
-                        type="password"
+                    <PasswordField
                         id="password_confirmation"
-                        name="password_confirmation"
-                        value={data.password_confirmation}
-                        className="mt-1 block w-full"
+                        label="Konfirmasi password"
+                        placeholder="Ulangi password"
                         autoComplete="new-password"
-                        onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
-                        }
+                        {...field('password_confirmation')}
                     />
-
-                    <InputError
-                        message={errors.password_confirmation}
-                        className="mt-2"
-                    />
-                </div>
-
-                <div className="mt-4 flex items-center justify-end">
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Reset Password
-                    </PrimaryButton>
-                </div>
+                    <Button type="submit" size="lg" icon={ArrowUpRight} loading={form.processing} disabled={form.processing} className="mt-2 w-full">
+                        Simpan Password
+                    </Button>
+                </Reveal>
             </form>
-        </GuestLayout>
+        </AuthLayout>
     );
 }

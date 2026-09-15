@@ -1,120 +1,120 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import Reveal from '@/Components/animation/Reveal';
+import MemberHighlight from '@/Components/auth/MemberHighlight';
+import Button from '@/Components/common/Button';
+import TextLink from '@/Components/common/TextLink';
+import CheckboxField from '@/Components/form/CheckboxField';
+import PasswordField from '@/Components/form/PasswordField';
+import TextField from '@/Components/form/TextField';
+import { useCheckboxField, useFormField } from '@/hooks/useFormField';
+import AuthLayout from '@/Layouts/AuthLayout';
+import { safeRoute } from '@/lib/utils';
+import { useForm, usePage } from '@inertiajs/react';
+import { ArrowUpRight, Mail, Phone, User } from 'lucide-react';
 
 export default function Register() {
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { dpPercentage } = usePage().props;
+    const form = useForm({
         name: '',
         email: '',
+        phone: '',
         password: '',
         password_confirmation: '',
+        terms: false,
     });
+    const field = useFormField(form);
+    const checkbox = useCheckboxField(form);
 
-    const submit = (e) => {
-        e.preventDefault();
-
-        post(route('register'), {
-            onFinish: () => reset('password', 'password_confirmation'),
-        });
+    const submit = (event) => {
+        event.preventDefault();
+        form.post(route('register'), { onFinish: () => form.reset('password', 'password_confirmation') });
     };
 
+    const termsHref = safeRoute('terms', null);
+
     return (
-        <GuestLayout>
-            <Head title="Register" />
-
-            <form onSubmit={submit}>
-                <div>
-                    <InputLabel htmlFor="name" value="Name" />
-
-                    <TextInput
+        <AuthLayout
+            title="Daftar"
+            eyebrow="Gratis selamanya"
+            heading="Join the club."
+            description={`Buat akun member untuk booking dengan DP ${dpPercentage}% dan simpan semua riwayat mainmu.`}
+            aside={{
+                title: 'Play more, pay smarter.',
+                benefits: [
+                    `Amankan slot cukup dengan DP ${dpPercentage}%`,
+                    'Riwayat booking & invoice tersimpan',
+                    'Checkout lebih cepat tanpa isi data ulang',
+                    'Pengingat jadwal & pelunasan otomatis',
+                ],
+                highlight: <MemberHighlight />,
+            }}
+            footer={
+                <p>
+                    Sudah punya akun? <TextLink href={route('login')}>Masuk</TextLink>
+                </p>
+            }
+        >
+            <form onSubmit={submit} noValidate>
+                <Reveal y={24} stagger={0.06} delay={0.1} className="flex flex-col gap-5">
+                    <TextField
                         id="name"
-                        name="name"
-                        value={data.name}
-                        className="mt-1 block w-full"
+                        label="Nama lengkap"
+                        icon={User}
+                        placeholder="Nama sesuai identitas"
                         autoComplete="name"
-                        isFocused={true}
-                        onChange={(e) => setData('name', e.target.value)}
-                        required
+                        autoFocus
+                        {...field('name')}
                     />
 
-                    <InputError message={errors.name} className="mt-2" />
-                </div>
+                    <div className="grid gap-5 sm:grid-cols-2">
+                        <TextField
+                            id="email"
+                            type="email"
+                            label="Email"
+                            icon={Mail}
+                            placeholder="nama@email.com"
+                            autoComplete="email"
+                            {...field('email')}
+                        />
+                        <TextField
+                            id="phone"
+                            type="tel"
+                            inputMode="tel"
+                            label="No. WhatsApp"
+                            icon={Phone}
+                            placeholder="0812 3456 7890"
+                            autoComplete="tel"
+                            {...field('phone')}
+                        />
+                    </div>
 
-                <div className="mt-4">
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        onChange={(e) => setData('email', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.email} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
-
-                    <TextInput
+                    <PasswordField
                         id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
+                        label="Password"
+                        placeholder="Minimal 8 karakter"
                         autoComplete="new-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                        required
+                        showStrength
+                        {...field('password')}
                     />
 
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel
-                        htmlFor="password_confirmation"
-                        value="Confirm Password"
-                    />
-
-                    <TextInput
+                    <PasswordField
                         id="password_confirmation"
-                        type="password"
-                        name="password_confirmation"
-                        value={data.password_confirmation}
-                        className="mt-1 block w-full"
+                        label="Konfirmasi password"
+                        placeholder="Ulangi password"
                         autoComplete="new-password"
-                        onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
-                        }
-                        required
+                        {...field('password_confirmation')}
                     />
 
-                    <InputError
-                        message={errors.password_confirmation}
-                        className="mt-2"
-                    />
-                </div>
+                    <CheckboxField id="terms" {...checkbox('terms')}>
+                        Saya menyetujui{' '}
+                        {termsHref ? <TextLink href={termsHref}>syarat & ketentuan</TextLink> : <span className="font-semibold text-bone-50">syarat & ketentuan</span>}{' '}
+                        serta kebijakan privasi PBS.
+                    </CheckboxField>
 
-                <div className="mt-4 flex items-center justify-end">
-                    <Link
-                        href={route('login')}
-                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                        Already registered?
-                    </Link>
-
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Register
-                    </PrimaryButton>
-                </div>
+                    <Button type="submit" size="lg" icon={ArrowUpRight} loading={form.processing} disabled={form.processing} className="mt-2 w-full">
+                        Buat Akun
+                    </Button>
+                </Reveal>
             </form>
-        </GuestLayout>
+        </AuthLayout>
     );
 }

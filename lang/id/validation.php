@@ -1,0 +1,75 @@
+<?php
+
+/*
+ * Pesan validasi Bahasa Indonesia. Aturan yang tidak tercantum akan memakai fallback bahasa Inggris.
+ */
+return [
+    'accepted' => ':Attribute harus disetujui.',
+    'after' => ':Attribute harus tanggal setelah :date.',
+    'after_or_equal' => ':Attribute harus tanggal setelah atau sama dengan :date.',
+    'alpha_dash' => ':Attribute hanya boleh berisi huruf, angka, strip, dan garis bawah.',
+    'array' => ':Attribute harus berupa daftar.',
+    'before' => ':Attribute harus tanggal sebelum :date.',
+    'before_or_equal' => ':Attribute harus tanggal sebelum atau sama dengan :date.',
+    'between' => [
+        'numeric' => ':Attribute harus di antara :min dan :max.',
+        'string' => ':Attribute harus di antara :min dan :max karakter.',
+        'array' => ':Attribute harus berisi :min sampai :max item.',
+    ],
+    'boolean' => ':Attribute harus bernilai benar atau salah.',
+    'confirmed' => 'Konfirmasi :attribute tidak cocok.',
+    'current_password' => 'Password saat ini salah.',
+    'date' => ':Attribute bukan tanggal yang valid.',
+    'date_format' => ':Attribute tidak sesuai format :format.',
+    'digits_between' => ':Attribute harus terdiri dari :min sampai :max digit.',
+    'email' => ':Attribute harus berupa alamat email yang valid.',
+    'exists' => ':Attribute yang dipilih tidak valid.',
+    'image' => ':Attribute harus berupa gambar.',
+    'in' => ':Attribute yang dipilih tidak valid.',
+    'integer' => ':Attribute harus berupa bilangan bulat.',
+    'lowercase' => ':Attribute harus menggunakan huruf kecil.',
+    'max' => [
+        'numeric' => ':Attribute tidak boleh lebih dari :max.',
+        'file' => ':Attribute tidak boleh lebih dari :max kilobyte.',
+        'string' => ':Attribute tidak boleh lebih dari :max karakter.',
+        'array' => ':Attribute tidak boleh lebih dari :max item.',
+    ],
+    'mimes' => ':Attribute harus berupa file bertipe: :values.',
+    'min' => [
+        'numeric' => ':Attribute minimal :min.',
+        'file' => ':Attribute minimal :min kilobyte.',
+        'string' => ':Attribute minimal :min karakter.',
+        'array' => ':Attribute minimal berisi :min item.',
+    ],
+    'numeric' => ':Attribute harus berupa angka.',
+    'password' => [
+        'letters' => ':Attribute harus mengandung minimal satu huruf.',
+        'mixed' => ':Attribute harus mengandung huruf besar dan huruf kecil.',
+        'numbers' => ':Attribute harus mengandung minimal satu angka.',
+        'symbols' => ':Attribute harus mengandung minimal satu simbol.',
+        'uncompromised' => ':Attribute ini pernah bocor di internet. Gunakan :attribute lain.',
+    ],
+    'regex' => 'Format :attribute tidak valid.',
+    'required' => ':Attribute wajib diisi.',
+    'same' => ':Attribute dan :other harus sama.',
+    'size' => [
+        'numeric' => ':Attribute harus berukuran :size.',
+        'string' => ':Attribute harus :size karakter.',
+    ],
+    'string' => ':Attribute harus berupa teks.',
+    'unique' => ':Attribute sudah terdaftar.',
+    'url' => ':Attribute harus berupa URL yang valid.',
+
+    'attributes' => [
+        'name' => 'nama',
+        'email' => 'email',
+        'phone' => 'nomor WhatsApp',
+        'password' => 'password',
+        'password_confirmation' => 'konfirmasi password',
+        'terms' => 'syarat & ketentuan',
+        'date' => 'tanggal',
+        'court_id' => 'lapangan',
+        'players_count' => 'jumlah pemain',
+        'notes' => 'catatan',
+    ],
+];

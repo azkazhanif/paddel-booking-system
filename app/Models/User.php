@@ -100,6 +100,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Normalisasi nomor WhatsApp ke format 62xxxxxxxxxx (0812… / +62 812… / 812… → 62812…).
+     */
+    public static function normalizePhone(?string $phone): ?string
+    {
+        $digits = preg_replace('/\D/', '', (string) $phone);
+
+        return match (true) {
+            $digits === '' => null,
+            str_starts_with($digits, '62') => $digits,
+            str_starts_with($digits, '0') => '62'.substr($digits, 1),
+            str_starts_with($digits, '8') => '62'.$digits,
+            default => $digits,
+        };
+    }
+
+    /**
      * BR-DP1 & BR-DP8: member terverifikasi, tidak diblokir, dan akses DP tidak sedang dicabut.
      */
     public function canUseDp(): bool

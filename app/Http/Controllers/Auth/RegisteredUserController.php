@@ -31,15 +31,23 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $request->merge(['phone' => User::normalizePhone($request->input('phone'))]);
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'phone' => ['required', 'string', 'regex:/^62\d{8,13}$/'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'terms' => ['accepted'],
+        ], [
+            'phone.regex' => 'Nomor WhatsApp tidak valid. Contoh: 081234567890.',
+            'terms.accepted' => 'Kamu perlu menyetujui syarat & ketentuan.',
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'phone' => $request->phone,
             'password' => Hash::make($request->password),
         ]);
 

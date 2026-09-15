@@ -16,12 +16,14 @@ function CourtCard({ court, index }) {
             data-cursor="Book"
             className="group relative w-[82vw] shrink-0 snap-start overflow-hidden rounded-md sm:w-[60vw] lg:w-[34vw]"
         >
-            <CourtImage
-                src={court.image}
-                alt={court.name}
-                className="aspect-[4/5] rounded-md lg:aspect-auto lg:h-[min(60svh,38rem)]"
-                imageClassName="transition-transform duration-700 ease-out-expo group-hover:scale-105"
-            />
+            <div data-pin-media>
+                <CourtImage
+                    src={court.image}
+                    alt={court.name}
+                    className="aspect-4/5 rounded-md lg:aspect-auto lg:h-[min(60svh,38rem)]"
+                    imageClassName="transition-transform duration-700 ease-out-expo group-hover:scale-105"
+                />
+            </div>
             <div className="absolute inset-0 flex flex-col justify-between bg-linear-to-t from-ink-950/90 via-ink-950/10 to-transparent p-5 text-bone-50 md:p-7">
                 <div className="flex items-center justify-between">
                     <span className="font-display text-sm font-semibold tabular-nums">{String(index + 1).padStart(2, '0')}</span>
