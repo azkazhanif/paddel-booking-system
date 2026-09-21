@@ -11,6 +11,7 @@ use App\Enums\RefundStatus;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -19,6 +20,8 @@ use Illuminate\Support\Str;
 
 class Booking extends Model
 {
+    use HasFactory;
+
     public const TIMEZONE = 'Asia/Jakarta';
 
     protected const CODE_ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -270,6 +273,28 @@ class Booking extends Model
                 ->subHours((int) Setting::get('booking.cancel_before_hours', 24))
                 ->isFuture(),
             default => false,
+        };
+    }
+
+    /**
+     * Admin/staff boleh membatalkan booking yang belum dimainkan tanpa terikat batas jam kebijakan customer.
+     */
+    public function isCancellableByStaff(): bool
+    {
+        return in_array($this->status, [BookingStatus::Pending, BookingStatus::Confirmed], true);
+    }
+
+    /**
+     * 8.11: alasan booking belum bisa check-in, atau null bila boleh (confirmed, hari ini, lunas).
+     */
+    public function checkInBlocker(): ?string
+    {
+        return match (true) {
+            $this->status === BookingStatus::CheckedIn => 'Booking ini sudah check-in.',
+            $this->status !== BookingStatus::Confirmed => 'Hanya booking berstatus terkonfirmasi yang bisa check-in.',
+            $this->date->toDateString() !== now(self::TIMEZONE)->toDateString() => 'Check-in hanya bisa dilakukan pada hari main.',
+            $this->payment_status !== PaymentStatus::Paid => 'Booking belum lunas. Catat pelunasan terlebih dahulu.',
+            default => null,
         };
     }
 

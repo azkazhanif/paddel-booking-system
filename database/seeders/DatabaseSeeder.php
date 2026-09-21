@@ -23,5 +23,10 @@ class DatabaseSeeder extends Seeder
         if (! app()->isProduction()) {
             $this->call(TestimonialSeeder::class);
         }
+
+        // Data booking contoh untuk mencoba panel admin; tidak dipakai di production maupun test
+        if (! app()->isProduction() && ! app()->runningUnitTests()) {
+            $this->call(DemoBookingSeeder::class);
+        }
     }
 }

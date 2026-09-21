@@ -89,9 +89,34 @@ class User extends Authenticatable
         $query->where('role', UserRole::Customer);
     }
 
+    public function scopeInternal(Builder $query): void
+    {
+        $query->whereIn('role', UserRole::internalValues());
+    }
+
+    public function hasRole(UserRole|string ...$roles): bool
+    {
+        $values = array_map(fn (UserRole|string $role) => $role instanceof UserRole ? $role->value : $role, $roles);
+
+        return in_array($this->role?->value, $values, true);
+    }
+
+    public function isOwner(): bool
+    {
+        return $this->role === UserRole::Owner;
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;
+    }
+
+    /**
+     * Owner & admin sama-sama mengakses panel admin; perbedaannya ada di menu keuangan, pengaturan, dan kelola user.
+     */
+    public function canAccessAdmin(): bool
+    {
+        return $this->hasRole(UserRole::Owner, UserRole::Admin);
     }
 
     public function isStaff(): bool

@@ -34,6 +34,15 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                'can' => fn () => [
+                    'accessAdmin' => (bool) $request->user()?->canAccessAdmin(),
+                    'viewFinance' => (bool) $request->user()?->isOwner(),
+                    'manageUsers' => (bool) $request->user()?->isOwner(),
+                ],
+            ],
+            'flash' => fn () => [
+                'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
             ],
             'dpPercentage' => fn () => (int) Setting::get('dp.percentage', 30),
         ];

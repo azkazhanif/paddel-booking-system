@@ -119,7 +119,8 @@ class CourtController extends Controller
 
 ### Routes
 
-- `routes/web.php` dikelompokkan per area: public, booking (guest & member), customer (`auth`, `verified`), staff (`role:staff,admin`), admin (`role:admin`, prefix `admin`, name `admin.`).
+- `routes/web.php` dikelompokkan per area: public, booking (guest & member), customer (`auth`, `verified`), staff (`role:staff,admin,owner`), admin (`role:owner,admin`, prefix `admin`, name `admin.`).
+- **Owner vs Admin:** keduanya memakai panel `/admin`. Owner punya akses penuh; admin hanya operasional. Menu khusus owner (kelola user, pengaturan, laporan) dibungkus `role:owner`, dan data keuangan (pendapatan, nilai booking, metode bayar) hanya dikirim ke owner. Middleware `role` juga menolak akun `is_blocked`.
 - Semua route wajib bernama; nama & URI mengikuti tabel di PRD.md §7.2.
 - Webhook Midtrans dikecualikan dari CSRF di `bootstrap/app.php`.
 
@@ -148,7 +149,7 @@ class CourtController extends Controller
 | `Voucher`      | `bookings(): HasMany`                                                                                                                   |
 | `ActivityLog`  | `user(): BelongsTo` · `subject(): MorphTo`                                                                                              |
 
-Enum di `app/Enums`: `UserRole`, `BookingStatus`, `PaymentStatus`, `PaymentOption` (`full`/`dp`), `PaymentType` (`full`/`dp`/`settlement`/`offline`), `CustomerType` (`guest`/`member`), `CourtType`.
+Enum di `app/Enums`: `UserRole` (`customer`/`staff`/`admin`/`owner`), `BookingStatus`, `PaymentStatus`, `PaymentOption` (`full`/`dp`), `PaymentType` (`full`/`dp`/`settlement`/`offline`), `CustomerType` (`guest`/`member`), `CourtType`.
 
 Contoh helper bisnis di model (bukan service):
 
