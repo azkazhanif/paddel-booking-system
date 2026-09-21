@@ -4,7 +4,6 @@ import BentoCard from '@/Components/common/BentoCard';
 import BentoGrid from '@/Components/common/BentoGrid';
 import Button from '@/Components/common/Button';
 import Container from '@/Components/common/Container';
-import CourtVisual from '@/Components/common/CourtVisual';
 import Section from '@/Components/common/Section';
 import { useIntro } from '@/hooks/useIntro';
 import { formatRupiahCompact } from '@/lib/format';
@@ -37,7 +36,8 @@ export default function Hero({ hero, pricing, stats, dpPercentage }) {
                         const timeline = gsap
                             .timeline({ paused: !introDoneRef.current })
                             .from(self.chars, { yPercent: 120, duration: 1.4, stagger: 0.03 })
-                            .from('[data-court-line]', { drawSVG: 0, duration: 2.2, stagger: 0.18, ease: 'power2.inOut' }, 0)
+                            .from('[data-hero-media]', { clipPath: 'inset(18% 12% 30% 12%)', autoAlpha: 0, duration: 1.8, ease: 'expo.inOut' }, 0)
+                            .from('[data-hero-image]', { scale: 1.2, duration: 2.4, ease: 'expo.out' }, 0)
                             .from('[data-hero-fade]', { y: 30, autoAlpha: 0, duration: 1, stagger: 0.08 }, 0.5)
                             .from('[data-hero-card]', { y: 100, autoAlpha: 0, duration: 1.3, stagger: 0.1 }, 0.7);
 
@@ -65,9 +65,25 @@ export default function Hero({ hero, pricing, stats, dpPercentage }) {
     return (
         <Section tone="dark" className="flex min-h-svh flex-col overflow-hidden pt-28 pb-6 md:pt-36 md:pb-10">
             <div ref={ref} className="flex flex-1 flex-col">
-                <div aria-hidden className="pointer-events-none absolute inset-x-0 top-24 flex justify-center" data-speed="0.7">
-                    <CourtVisual className="w-[140%] max-w-none text-court-500/15 md:w-[92%]" strokeClassName="stroke-current" />
+                {/* Foto lapangan sebagai latar: pemain ada di kanan foto, sisi kiri & bawah sengaja digelapkan untuk headline dan kartu */}
+                <div
+                    aria-hidden
+                    data-hero-media
+                    data-speed="0.85"
+                    style={{ clipPath: 'inset(0%)' }}
+                    className="pointer-events-none absolute -inset-y-32 inset-x-0 overflow-hidden md:-inset-y-40"
+                >
+                    <img
+                        data-hero-image
+                        src="/hero.jpeg"
+                        alt=""
+                        fetchPriority="high"
+                        className="size-full object-cover object-[70%_22%] md:object-center"
+                    />
+                    <div className="absolute inset-0 bg-linear-to-t from-ink-950 via-ink-950/78 to-ink-950/45 md:bg-linear-to-r md:from-ink-950 md:via-ink-950/70 md:to-ink-950/10" />
+                    <div className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-ink-950 to-transparent" />
                 </div>
+
                 <div aria-hidden className="pointer-events-none absolute -top-40 left-1/2 size-[48rem] -translate-x-1/2 rounded-full bg-court-700/30 blur-[140px]" />
 
                 <Container className="relative flex flex-1 flex-col">
