@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
 class Booking extends Model
@@ -383,6 +384,71 @@ class Booking extends Model
     {
         return $this->payments()
             ->where('provider', PaymentProvider::Midtrans)
+            ->open()
+            ->where(fn (Builder $query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->latest()
+            ->first();
+    }
+
+    /**
+     * BR-05: booking pending yang lewat batas bayar dilepas slotnya. Dipanggil scheduler
+     * tiap menit, dan sekali lagi saat halaman jadwal dibuka agar slot lokal ikut segar.
+     */
+    public static function expireStale(): void
+    {
+        static::query()->expirable()->with('items')->get()->each(function (self $booking) {
+            $booking->forceFill(['status' => BookingStatus::Expired])->save();
+            $booking->releaseSlots();
+        });
+    }
+
+    public function hasExpired(): bool
+    {
+        return $this->status === BookingStatus::Expired
+            || ($this->status === BookingStatus::Pending && $this->expires_at?->isPast());
+    }
+
+    public function isPayable(): bool
+    {
+        return $this->remaining_amount > 0
+            && ! $this->hasExpired()
+            && in_array($this->status, [BookingStatus::Pending, BookingStatus::Confirmed], true);
+    }
+
+    /**
+     * Link akses booking untuk guest (dipakai di email "Selesaikan Pembayaran" & tombol
+     * simpan link di checkout). Berlaku sampai 7 hari setelah tanggal main.
+     */
+    public function guestUrl(): string
+    {
+        return URL::temporarySignedRoute('booking.guest.show', $this->startsAt()->addDays(7), ['booking' => $this->code]);
+    }
+
+    /**
+     * BR-DP2 & BR-DP4: kunci opsi DP pada booking beserta nominal dan batas pelunasannya.
+     */
+    public function applyDpOption(): void
+    {
+        $this->forceFill(['dp_percentage' => (int) Setting::get('dp.percentage', 30)]);
+
+        $this->forceFill([
+            'payment_option' => PaymentOption::Dp,
+            'dp_amount' => $this->calculateDpAmount(),
+            'settlement_due_at' => $this->startsAt()->subHours((int) Setting::get('dp.settle_before_hours', 3)),
+        ])->save();
+    }
+
+    /**
+     * Transaksi Snap yang masih berlaku untuk tipe & nominal yang sama, supaya klik
+     * "Bayar" berulang tidak membuat order baru terus-menerus.
+     */
+    public function openSnapPayment(PaymentType $type, int $amount): ?Payment
+    {
+        return $this->payments()
+            ->where('provider', PaymentProvider::Midtrans)
+            ->where('type', $type)
+            ->where('amount', $amount)
+            ->whereNotNull('snap_token')
             ->open()
             ->where(fn (Builder $query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
             ->latest()

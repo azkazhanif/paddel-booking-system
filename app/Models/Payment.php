@@ -141,6 +141,84 @@ class Payment extends Model
     }
 
     /**
+     * Snap dilayani dari host app.*, berbeda dengan Core API di api.*.
+     */
+    public static function snapBaseUrl(): string
+    {
+        return config('midtrans.is_production') ? 'https://app.midtrans.com' : 'https://app.sandbox.midtrans.com';
+    }
+
+    /**
+     * Buat transaksi Snap untuk booking online (bayar penuh, DP, atau pelunasan).
+     * Nominal selalu dikirim dari hasil hitung server, bukan dari client.
+     */
+    public static function chargeSnap(Booking $booking, int $amount, PaymentType $type, ?int $expiryMinutes = null): self
+    {
+        $expiryMinutes = max(1, $expiryMinutes ?? (int) config('midtrans.expiry_minutes', 15));
+        $orderId = self::newOrderId($booking, $type);
+
+        $response = self::midtrans()->baseUrl(self::snapBaseUrl())->post('/snap/v1/transactions', [
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => $amount,
+            ],
+            'item_details' => [[
+                'id' => $booking->code,
+                'name' => Str::limit(self::itemName($booking, $type), 50, ''),
+                'price' => $amount,
+                'quantity' => 1,
+            ]],
+            'customer_details' => array_filter([
+                'first_name' => $booking->customer_name,
+                'email' => $booking->customer_email,
+                'phone' => $booking->customer_phone,
+            ]),
+            'expiry' => [
+                'unit' => 'minute',
+                'duration' => $expiryMinutes,
+            ],
+            'callbacks' => [
+                'finish' => route('booking.status', $booking->code),
+            ],
+        ]);
+
+        $body = $response->json() ?? [];
+
+        PaymentLog::create([
+            'order_id' => $orderId,
+            'event' => 'snap',
+            'payload' => $body,
+        ]);
+
+        $response->throw();
+
+        $payment = $booking->payments()->create([
+            'type' => $type,
+            'provider' => PaymentProvider::Midtrans,
+            'order_id' => $orderId,
+            'amount' => $amount,
+            'status' => TransactionStatus::Pending,
+            'snap_token' => $body['token'] ?? null,
+            'snap_redirect_url' => $body['redirect_url'] ?? null,
+            'expires_at' => now()->addMinutes($expiryMinutes),
+            'raw_response' => $body,
+        ]);
+
+        PaymentLog::query()->where('order_id', $orderId)->whereNull('payment_id')->update(['payment_id' => $payment->id]);
+
+        return $payment;
+    }
+
+    protected static function itemName(Booking $booking, PaymentType $type): string
+    {
+        return match ($type) {
+            PaymentType::Dp => "DP booking {$booking->code}",
+            PaymentType::Settlement => "Pelunasan booking {$booking->code}",
+            default => "Booking {$booking->code}",
+        };
+    }
+
+    /**
      * Buat transaksi QRIS Core API untuk dipindai customer di tempat.
      * Mengembalikan payment berstatus pending beserta URL gambar QR.
      */

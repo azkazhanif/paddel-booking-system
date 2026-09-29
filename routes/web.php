@@ -10,8 +10,11 @@ use App\Http\Controllers\Admin\Court\CourtPricingController as AdminCourtPricing
 use App\Http\Controllers\Admin\Customer\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\Dashboard\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\User\UserController as AdminUserController;
+use App\Http\Controllers\Booking\BookingController;
+use App\Http\Controllers\Booking\GuestBookingController;
 use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Payment\MidtransNotificationController;
+use App\Http\Controllers\Payment\PaymentController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +26,21 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+/*
+|--------------------------------------------------------------------------
+| Booking — tamu & member (tanpa middleware auth)
+|--------------------------------------------------------------------------
+*/
+
+Route::get('booking', [BookingController::class, 'create'])->name('booking.create');
+Route::post('booking', [BookingController::class, 'store'])->middleware('throttle:20,60')->name('booking.store');
+Route::get('booking/checkout/{booking:code}', [BookingController::class, 'checkout'])->name('booking.checkout');
+Route::post('booking/{booking:code}/pay', [PaymentController::class, 'store'])->middleware('throttle:30,60')->name('booking.pay');
+Route::get('booking/{booking:code}/status', [PaymentController::class, 'status'])->name('booking.status');
+
+// Link akses booking tamu dari email; signature Laravel menggantikan login.
+Route::get('b/{booking:code}', GuestBookingController::class)->middleware('signed')->name('booking.guest.show');
 
 /*
 |--------------------------------------------------------------------------
