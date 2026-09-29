@@ -70,6 +70,11 @@ export default function BookingCreate({ courts, selected, availability, limits, 
         });
     };
 
+    // Batas tanggal untuk input date: hari ini + jendela booking dari settings.
+    const maxDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(
+        new Date(new Date(`${today}T00:00:00+07:00`).getTime() + limits.advanceDays * 86_400_000),
+    );
+
     const chosen = availability.filter((slot) => form.data.slots.includes(slot.start_time));
     const subtotal = chosen.reduce((sum, slot) => sum + slot.price, 0);
     const fee = chosen.length ? serviceFee : 0;
@@ -99,13 +104,21 @@ export default function BookingCreate({ courts, selected, availability, limits, 
                         </p>
                     </header>
 
-                    <Panel title="1. Tanggal main">
-                        <DateScroller from={today} days={limits.advanceDays} value={form.data.date} onChange={(date) => reload({ date })} />
-                        {form.errors.date && (
-                            <p role="alert" className="mt-2 text-sm text-destructive">
-                                {form.errors.date}
-                            </p>
-                        )}
+                    <Panel title="1. Tanggal main" description={`Bisa booking untuk hari ini sampai ${limits.advanceDays} hari ke depan.`}>
+                        <DateScroller from={today} days={Math.min(limits.advanceDays, 13)} value={form.data.date} onChange={(date) => reload({ date })} />
+                        <div className="mt-4 flex flex-wrap items-end gap-3">
+                            <TextField
+                                id="date"
+                                label="Atau pilih tanggal lain"
+                                type="date"
+                                min={today}
+                                max={maxDate}
+                                value={form.data.date}
+                                error={form.errors.date}
+                                onChange={(event) => event.target.value && reload({ date: event.target.value })}
+                                className="w-full sm:w-56"
+                            />
+                        </div>
                     </Panel>
 
                     <Panel title="2. Lapangan">
