@@ -10,7 +10,10 @@ use App\Enums\PaymentProvider;
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
 use App\Enums\RefundStatus;
+use App\Enums\ReminderChannel;
+use App\Enums\ReminderType;
 use App\Enums\TransactionStatus;
+use App\Mail\PaymentReceiptMail;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -19,6 +22,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
@@ -354,6 +359,83 @@ class Booking extends Model
                 'expires_at' => null,
             ])->save();
         }
+
+        $this->sendPaymentReceipt();
+    }
+
+    /**
+     * Bukti pembayaran ke email pemesan. Dikirim sekali untuk DP dan sekali lagi saat
+     * lunas; unique index payment_reminders yang menjaga agar tidak terkirim ganda
+     * walau webhook Midtrans datang berkali-kali.
+     */
+    public function sendPaymentReceipt(): void
+    {
+        $type = match ($this->payment_status) {
+            PaymentStatus::Paid => ReminderType::PaymentPaid,
+            PaymentStatus::DpPaid => ReminderType::PaymentDp,
+            default => null,
+        };
+
+        if (! $type || ! $this->customer_email) {
+            return;
+        }
+
+        $reminder = $this->reminders()->firstOrCreate(
+            ['type' => $type, 'channel' => ReminderChannel::Email],
+            ['sent_at' => now()],
+        );
+
+        if (! $reminder->wasRecentlyCreated) {
+            return;
+        }
+
+        Mail::to($this->customer_email)->queue(new PaymentReceiptMail($this));
+    }
+
+    /**
+     * Pengingat WhatsApp menjelang jam main (default 1 jam sebelum).
+     */
+    public function sendPlayReminder(): bool
+    {
+        $minutes = max(1, (int) round(now(self::TIMEZONE)->diffInMinutes($this->startsAt(), false)));
+        $venue = Setting::get('venue.name', 'PBS Padel Club');
+        $lead = $minutes >= 60 ? round($minutes / 60).' jam' : $minutes.' menit';
+
+        $message = implode("\n", array_filter([
+            "Halo {$this->customer_name}!",
+            '',
+            "Booking *{$this->code}* di {$venue} akan dimulai sekitar {$lead} lagi.",
+            'Lapangan: '.($this->court?->name ?? '-'),
+            'Jam: '.substr($this->start_time, 0, 5).'-'.substr($this->end_time, 0, 5).' WIB',
+            $this->remaining_amount > 0
+                ? 'Sisa tagihan: Rp'.number_format($this->remaining_amount, 0, ',', '.').' — bisa dilunasi online atau di venue sebelum main.'
+                : null,
+            '',
+            'Pastikan datang on time ya. Sampai jumpa di lapangan!',
+        ], fn ($line) => $line !== null));
+
+        return PaymentReminder::sendWhatsapp($this, ReminderType::Play1h, $message);
+    }
+
+    /**
+     * Booking terkonfirmasi yang jam mainnya tinggal <= $minutes lagi dan belum diingatkan.
+     *
+     * @return Collection<int, self>
+     */
+    public static function dueForPlayReminder(int $minutes): Collection
+    {
+        $now = now(self::TIMEZONE);
+        $until = $now->copy()->addMinutes($minutes);
+
+        return static::query()
+            ->with('court:id,name')
+            ->whereIn('status', [BookingStatus::Confirmed, BookingStatus::CheckedIn])
+            ->whereBetween('date', [$now->toDateString(), $until->toDateString()])
+            ->whereDoesntHave('reminders', fn (Builder $query) => $query
+                ->where('type', ReminderType::Play1h)
+                ->where('channel', ReminderChannel::Whatsapp))
+            ->get()
+            ->filter(fn (self $booking) => $booking->startsAt()->between($now, $until));
     }
 
     /**

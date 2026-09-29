@@ -32,6 +32,7 @@ class SettingSeeder extends Seeder
             'dp.no_show_grace_minutes' => 15,
             'dp.max_unsettled_per_user' => 2,
             'dp.refundable_before_hours' => 24,
+            'reminder.play_lead_minutes' => 60,
             'invoice.company_name' => 'PBS Padel Club',
             'invoice.tax_id' => null,
             'invoice.footer_note' => 'Terima kasih telah bermain di PBS.',
