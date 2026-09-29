@@ -1,5 +1,6 @@
 import DataTable from '@/Components/admin/DataTable';
 import FilterBar from '@/Components/admin/FilterBar';
+import Button from '@/Components/common/Button';
 import EmptyState from '@/Components/common/EmptyState';
 import PageHeader from '@/Components/common/PageHeader';
 import Pagination from '@/Components/common/Pagination';
@@ -10,7 +11,7 @@ import { useFilters } from '@/hooks/useFilters';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { formatDate, formatRupiah, formatTimeRange } from '@/lib/format';
 import { Link } from '@inertiajs/react';
-import { CalendarSearch } from 'lucide-react';
+import { CalendarPlus, CalendarSearch } from 'lucide-react';
 
 const optionsOf = (type) => Object.entries(STATUS_MAP[type]).map(([value, [label]]) => ({ value, label }));
 
@@ -77,7 +78,15 @@ export default function BookingsIndex({ bookings, filters, courts }) {
 
     return (
         <AdminLayout title="Booking">
-            <PageHeader title="Booking" description="Semua booking online dan walk-in. Klik baris untuk detail, pembatalan, atau check-in." />
+            <PageHeader
+                title="Booking"
+                description="Semua booking online dan walk-in. Klik baris untuk detail, pembatalan, atau check-in."
+                actions={
+                    <Button href={route('admin.bookings.create')} icon={CalendarPlus}>
+                        Booking di tempat
+                    </Button>
+                }
+            />
 
             <div className="flex flex-col gap-4">
                 <FilterBar

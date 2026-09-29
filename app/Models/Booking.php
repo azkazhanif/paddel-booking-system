@@ -6,8 +6,11 @@ use App\Enums\BookingSource;
 use App\Enums\BookingStatus;
 use App\Enums\CustomerType;
 use App\Enums\PaymentOption;
+use App\Enums\PaymentProvider;
 use App\Enums\PaymentStatus;
+use App\Enums\PaymentType;
 use App\Enums\RefundStatus;
+use App\Enums\TransactionStatus;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -108,7 +111,7 @@ class Booking extends Model
 
     protected function customerEmail(): Attribute
     {
-        return Attribute::set(fn (string $value) => Str::lower(trim($value)));
+        return Attribute::set(fn (?string $value) => $value === null ? null : Str::lower(trim($value)));
     }
 
     public function user(): BelongsTo
@@ -333,6 +336,57 @@ class Booking extends Model
         }
 
         $this->save();
+    }
+
+    /**
+     * Dipanggil setiap kali ada transaksi yang settle: samakan nominal terbayar lalu
+     * naikkan status booking menjadi terkonfirmasi begitu ada uang masuk.
+     */
+    public function syncFromPayments(): void
+    {
+        $this->recalculatePaidAmount();
+
+        if ($this->paid_amount > 0 && $this->status === BookingStatus::Pending) {
+            $this->forceFill([
+                'status' => BookingStatus::Confirmed,
+                'confirmed_at' => $this->confirmed_at ?? now(),
+                'expires_at' => null,
+            ])->save();
+        }
+    }
+
+    /**
+     * Pencatatan pembayaran di tempat oleh staff/admin (tunai atau QRIS mesin venue).
+     */
+    public function recordOfflinePayment(int $amount, PaymentProvider $provider, PaymentType $type, int $recordedBy): Payment
+    {
+        $payment = $this->payments()->create([
+            'type' => $type,
+            'provider' => $provider,
+            'order_id' => Payment::newOrderId($this, $type),
+            'amount' => $amount,
+            'status' => TransactionStatus::Settlement,
+            'payment_method' => $provider->value,
+            'paid_at' => now(),
+            'recorded_by' => $recordedBy,
+        ]);
+
+        $this->syncFromPayments();
+
+        return $payment;
+    }
+
+    /**
+     * Transaksi QRIS Midtrans yang masih berlaku untuk dipindai ulang, bila ada.
+     */
+    public function openQrisPayment(): ?Payment
+    {
+        return $this->payments()
+            ->where('provider', PaymentProvider::Midtrans)
+            ->open()
+            ->where(fn (Builder $query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->latest()
+            ->first();
     }
 
     /**

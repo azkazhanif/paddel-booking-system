@@ -1,13 +1,17 @@
 <?php
 
 use App\Http\Controllers\Admin\Booking\BookingController as AdminBookingController;
+use App\Http\Controllers\Admin\Booking\BookingPaymentController as AdminBookingPaymentController;
 use App\Http\Controllers\Admin\Booking\CancelBookingController as AdminCancelBookingController;
 use App\Http\Controllers\Admin\Booking\CheckInBookingController as AdminCheckInBookingController;
+use App\Http\Controllers\Admin\Booking\WalkInBookingController as AdminWalkInBookingController;
 use App\Http\Controllers\Admin\Court\CourtController as AdminCourtController;
+use App\Http\Controllers\Admin\Court\CourtPricingController as AdminCourtPricingController;
 use App\Http\Controllers\Admin\Customer\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\Dashboard\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\User\UserController as AdminUserController;
 use App\Http\Controllers\Home\HomeController;
+use App\Http\Controllers\Payment\MidtransNotificationController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -53,10 +57,17 @@ Route::middleware(['auth', 'role:owner,admin'])->prefix('admin')->name('admin.')
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     Route::patch('courts/{court}/toggle', [AdminCourtController::class, 'toggle'])->name('courts.toggle');
+    Route::get('courts/{court}/pricing', [AdminCourtPricingController::class, 'edit'])->name('courts.pricing');
+    Route::put('courts/{court}/pricing', [AdminCourtPricingController::class, 'update'])->name('courts.pricing.update');
     Route::resource('courts', AdminCourtController::class)->except('show');
 
     Route::get('bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
+    Route::get('bookings/create', [AdminWalkInBookingController::class, 'create'])->name('bookings.create');
+    Route::post('bookings', [AdminWalkInBookingController::class, 'store'])->name('bookings.store');
     Route::get('bookings/{booking}', [AdminBookingController::class, 'show'])->name('bookings.show');
+    Route::get('bookings/{booking}/payment', [AdminBookingPaymentController::class, 'show'])->name('bookings.payment');
+    Route::post('bookings/{booking}/payment', [AdminBookingPaymentController::class, 'store'])->name('bookings.payment.store');
+    Route::put('bookings/{booking}/payment', [AdminBookingPaymentController::class, 'update'])->name('bookings.payment.refresh');
     Route::post('bookings/{booking}/cancel', AdminCancelBookingController::class)->name('bookings.cancel');
     Route::post('bookings/{booking}/check-in', AdminCheckInBookingController::class)->name('bookings.check-in');
 
@@ -70,5 +81,13 @@ Route::middleware(['auth', 'role:owner,admin'])->prefix('admin')->name('admin.')
         Route::resource('users', AdminUserController::class)->except(['show', 'destroy']);
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Webhook Midtrans (tanpa auth & CSRF — divalidasi lewat signature)
+|--------------------------------------------------------------------------
+*/
+
+Route::post('midtrans/notification', MidtransNotificationController::class)->name('midtrans.notification');
 
 require __DIR__.'/auth.php';

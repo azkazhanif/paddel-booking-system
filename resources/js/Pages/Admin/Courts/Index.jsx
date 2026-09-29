@@ -51,8 +51,10 @@ export default function CourtsIndex({ courts }) {
             key: 'actions',
             header: <span className="sr-only">Aksi</span>,
             align: 'right',
+            // modal={false}: tanpa ini Radix menyisakan pointer-events:none pada <body> ketika menu
+            // ditutup untuk membuka dialog, sehingga tombol konfirmasi hapus tidak bisa diklik.
             cell: (court) => (
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                     <DropdownMenuTrigger className="grid size-9 place-items-center rounded-full text-bone-50/60 hover:bg-white/5 hover:text-bone-50" aria-label={`Aksi untuk ${court.name}`}>
                         <Ellipsis className="size-4" />
                     </DropdownMenuTrigger>

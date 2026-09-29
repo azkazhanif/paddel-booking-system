@@ -41,9 +41,12 @@ export default function CourtForm({ court, types, nextSortOrder }) {
     const submit = (event) => {
         event.preventDefault();
 
-        // Upload file lewat PUT tidak didukung PHP, jadi update dikirim sebagai POST + _method
+        // Upload file lewat PUT tidak didukung PHP, jadi update dikirim sebagai POST + _method.
+        // transform() tidak mengembalikan form (Inertia 2), jadi post() harus dipanggil terpisah.
         if (isEdit) {
-            form.transform((data) => ({ ...data, _method: 'put' })).post(route('admin.courts.update', court.id), { forceFormData: true, preserveScroll: true });
+            form.transform((data) => ({ ...data, _method: 'put' }));
+            form.post(route('admin.courts.update', court.id), { forceFormData: true, preserveScroll: true });
+
             return;
         }
 

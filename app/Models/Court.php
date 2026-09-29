@@ -129,6 +129,20 @@ class Court extends Model
     }
 
     /**
+     * Slot pada tanggal tertentu lengkap dengan harga server (dipakai halaman booking publik & walk-in).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function availabilityOn(CarbonInterface $date): array
+    {
+        return array_map(fn (array $slot) => [
+            ...$slot,
+            'price' => $this->priceAt($date, $slot['start_time']),
+            'price_label' => $this->priceLabelAt($date, $slot['start_time'])?->value,
+        ], $this->slotsOn($date));
+    }
+
+    /**
      * Harga satu slot (BR-07): special price court ini > special price semua court > price rule > base price.
      */
     public function priceAt(CarbonInterface $date, string $startTime): int

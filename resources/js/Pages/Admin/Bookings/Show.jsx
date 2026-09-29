@@ -5,20 +5,30 @@ import PageHeader from '@/Components/common/PageHeader';
 import Panel from '@/Components/common/Panel';
 import StatusBadge from '@/Components/common/StatusBadge';
 import TextLink from '@/Components/common/TextLink';
+import SelectField from '@/Components/form/SelectField';
+import TextField from '@/Components/form/TextField';
 import TextareaField from '@/Components/form/TextareaField';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { formatDateLong, formatDateTime, formatRupiah, formatTimeRange } from '@/lib/format';
 import { useForm } from '@inertiajs/react';
-import { CircleAlert, MessageCircle, ScanLine, XCircle } from 'lucide-react';
+import { CircleAlert, MessageCircle, QrCode, ScanLine, Wallet, XCircle } from 'lucide-react';
 import { useState } from 'react';
 
 const PAYMENT_TYPES = { full: 'Bayar penuh', dp: 'DP', settlement: 'Pelunasan', offline: 'Offline' };
 const PROVIDERS = { midtrans: 'Midtrans', cash: 'Tunai', venue_qris: 'QRIS venue', bank_transfer: 'Transfer bank' };
 
+const OFFLINE_PROVIDERS = [
+    { value: 'cash', label: 'Tunai' },
+    { value: 'venue_qris', label: 'QRIS mesin venue' },
+    { value: 'bank_transfer', label: 'Transfer bank' },
+];
+
 export default function BookingShow({ booking, can, checkInBlocker }) {
     const [cancelOpen, setCancelOpen] = useState(false);
+    const [payOpen, setPayOpen] = useState(false);
     const cancelForm = useForm({ reason: '' });
     const checkInForm = useForm({});
+    const payForm = useForm({ amount: booking.remaining_amount, provider: 'cash' });
 
     const whatsapp = booking.customer_phone ? `https://wa.me/${booking.customer_phone}` : null;
     const paidRatio = booking.total ? Math.min(100, Math.round((booking.paid_amount / booking.total) * 100)) : 0;
@@ -30,6 +40,16 @@ export default function BookingShow({ booking, can, checkInBlocker }) {
                 title={<span className="font-mono tracking-wide">{booking.code}</span>}
                 actions={
                     <>
+                        {can.chargeQris && (
+                            <Button href={route('admin.bookings.payment', booking.id)} icon={QrCode}>
+                                Bayar QRIS
+                            </Button>
+                        )}
+                        {can.recordPayment && (
+                            <Button variant="outline" icon={Wallet} onClick={() => setPayOpen(true)}>
+                                Catat pembayaran
+                            </Button>
+                        )}
                         {can.checkIn && (
                             <Button
                                 icon={ScanLine}
@@ -181,6 +201,49 @@ export default function BookingShow({ booking, can, checkInBlocker }) {
                     </Panel>
                 </div>
             </div>
+
+            <ConfirmDialog
+                open={payOpen}
+                onOpenChange={(open) => {
+                    setPayOpen(open);
+                    if (!open) payForm.reset();
+                }}
+                title="Catat pembayaran diterima"
+                description={`Sisa tagihan booking ini ${formatRupiah(booking.remaining_amount)}. Pembayaran langsung tercatat masuk.`}
+                confirmLabel="Simpan pembayaran"
+                processing={payForm.processing}
+                onConfirm={() =>
+                    payForm.post(route('admin.bookings.payment.store', booking.id), {
+                        preserveScroll: true,
+                        onSuccess: () => {
+                            setPayOpen(false);
+                            payForm.reset();
+                        },
+                    })
+                }
+            >
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <TextField
+                        id="amount"
+                        label="Nominal"
+                        type="number"
+                        min={1}
+                        max={booking.remaining_amount}
+                        value={payForm.data.amount}
+                        error={payForm.errors.amount}
+                        onChange={(event) => payForm.setData('amount', event.target.value)}
+                        autoFocus
+                    />
+                    <SelectField
+                        id="provider"
+                        label="Metode"
+                        options={OFFLINE_PROVIDERS}
+                        value={payForm.data.provider}
+                        error={payForm.errors.provider}
+                        onChange={(event) => payForm.setData('provider', event.target.value)}
+                    />
+                </div>
+            </ConfirmDialog>
 
             <ConfirmDialog
                 open={cancelOpen}

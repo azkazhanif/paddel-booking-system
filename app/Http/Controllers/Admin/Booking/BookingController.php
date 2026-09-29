@@ -10,6 +10,7 @@ use App\Enums\TransactionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Court;
+use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -78,6 +79,8 @@ class BookingController extends Controller
             'can' => [
                 'cancel' => $booking->isCancellableByStaff(),
                 'checkIn' => $booking->checkInBlocker() === null,
+                'recordPayment' => $booking->remaining_amount > 0 && $booking->isCancellableByStaff(),
+                'chargeQris' => $booking->remaining_amount > 0 && $booking->isCancellableByStaff() && Payment::midtransConfigured(),
             ],
             'checkInBlocker' => $booking->checkInBlocker(),
             'hasPendingPayment' => $booking->payments->contains('status', TransactionStatus::Pending),
