@@ -249,6 +249,10 @@ class BookingController extends Controller
             ]),
             'court' => $booking->court?->only(['id', 'name', 'type']),
             'items' => $booking->items->map->only(['start_time', 'end_time', 'price', 'price_label'])->values(),
+            // QR hanya diterbitkan untuk booking yang slotnya sudah terkunci.
+            'qr' => in_array($booking->status, [BookingStatus::Confirmed, BookingStatus::CheckedIn], true)
+                ? $booking->qrCode()
+                : null,
         ];
     }
 

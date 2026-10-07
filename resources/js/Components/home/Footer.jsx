@@ -9,6 +9,7 @@ import { Link } from '@inertiajs/react';
 
 export default function Footer({ venue = {} }) {
     const legal = [
+        { label: 'Cek booking', href: safeRoute('booking.lookup', null) },
         { label: 'Syarat & Ketentuan', href: safeRoute('terms', null) },
         { label: 'Kebijakan Privasi', href: safeRoute('privacy', null) },
     ].filter((link) => link.href);

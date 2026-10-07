@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\Schedule\SlotBlockController as AdminSlotBlockCon
 use App\Http\Controllers\Admin\Setting\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\User\UserController as AdminUserController;
 use App\Http\Controllers\Booking\BookingController;
+use App\Http\Controllers\Booking\BookingLookupController;
 use App\Http\Controllers\Booking\GuestBookingController;
 use App\Http\Controllers\Court\CourtController;
 use App\Http\Controllers\Home\HomeController;
@@ -24,6 +25,8 @@ use App\Http\Controllers\Payment\MidtransNotificationController;
 use App\Http\Controllers\Payment\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Schedule\ScheduleController;
+use App\Http\Controllers\Staff\CheckInController as StaffCheckInController;
+use App\Http\Controllers\Staff\TodayController as StaffTodayController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -59,6 +62,10 @@ Route::get('booking/checkout/{booking:code}', [BookingController::class, 'checko
 Route::post('booking/{booking:code}/pay', [PaymentController::class, 'store'])->middleware('throttle:30,60')->name('booking.pay');
 Route::get('booking/{booking:code}/status', [PaymentController::class, 'status'])->name('booking.status');
 
+// Cek booking: detail tidak ditampilkan, link aksesnya dikirim ulang ke email terdaftar.
+Route::get('booking/lookup', [BookingLookupController::class, 'show'])->name('booking.lookup');
+Route::post('booking/lookup', [BookingLookupController::class, 'send'])->middleware('throttle:5,60')->name('booking.lookup.send');
+
 // Link akses booking tamu dari email; signature Laravel menggantikan login.
 Route::get('b/{booking:code}', GuestBookingController::class)->middleware('signed')->name('booking.guest.show');
 
@@ -93,6 +100,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Staff (termasuk admin & owner)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'role:staff,admin,owner'])->prefix('staff')->name('staff.')->group(function () {
+    Route::get('/', [StaffTodayController::class, 'index'])->name('today');
+    // Dibuka dari QR e-ticket: signature yang menggantikan pencarian manual.
+    Route::get('scan/{booking:code}', [StaffCheckInController::class, 'show'])->middleware('signed')->name('scan');
+    Route::post('bookings/{booking:code}/check-in', [StaffCheckInController::class, 'store'])->name('check-in');
 });
 
 /*

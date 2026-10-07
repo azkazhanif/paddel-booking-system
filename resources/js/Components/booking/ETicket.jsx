@@ -15,9 +15,18 @@ export default function ETicket({ booking, className }) {
                 <StatusBadge type="payment" value={booking.payment_status} className="ml-auto" />
             </div>
 
-            <div className="flex flex-col items-center gap-1 px-5 py-8 text-center">
-                <p className="text-xs text-bone-50/45">Tunjukkan kode ini ke staff saat tiba</p>
-                <p className="font-display text-4xl font-semibold tracking-[0.15em] break-all md:text-5xl">{booking.code}</p>
+            <div className="flex flex-col items-center gap-4 px-5 py-8 text-center">
+                {booking.qr && (
+                    <span className="rounded-md bg-bone-50 p-3">
+                        <img src={booking.qr} alt={`QR e-ticket booking ${booking.code}`} width={176} height={176} className="size-44" />
+                    </span>
+                )}
+                <div>
+                    <p className="text-xs text-bone-50/45">
+                        {booking.qr ? 'Tunjukkan QR ini ke staff saat tiba' : 'Tunjukkan kode ini ke staff saat tiba'}
+                    </p>
+                    <p className="mt-1 font-display text-4xl font-semibold tracking-[0.15em] break-all md:text-5xl">{booking.code}</p>
+                </div>
             </div>
 
             <dl className="grid grid-cols-2 gap-px border-t border-court-500/20 bg-court-500/10 text-sm">

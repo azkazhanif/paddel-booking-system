@@ -17,6 +17,10 @@ use App\Mail\BookingExpiredMail;
 use App\Mail\BookingPendingMail;
 use App\Mail\PaymentReceiptMail;
 use App\Mail\SettlementReminderMail;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -311,6 +315,54 @@ class Booking extends Model
     }
 
     /**
+     * Isi QR e-ticket: link scan ber-signature yang dibuka staff saat check-in.
+     * Berlaku sampai akhir hari main supaya tidak bisa dipakai ulang besoknya.
+     */
+    public function scanUrl(): string
+    {
+        return URL::temporarySignedRoute(
+            'staff.scan',
+            $this->startsAt()->endOfDay()->addDay(),
+            ['booking' => $this->code],
+        );
+    }
+
+    /**
+     * QR e-ticket sebagai data URI SVG, siap dipasang di <img src>.
+     */
+    public function qrCode(int $size = 320): string
+    {
+        $writer = new Writer(
+            new ImageRenderer(
+                new RendererStyle($size, 1),
+                new SvgImageBackEnd,
+            ),
+        );
+
+        return 'data:image/svg+xml;base64,'.base64_encode($writer->writeString($this->scanUrl()));
+    }
+
+    /**
+     * Catat kedatangan pemain. Mengembalikan alasan penolakan, atau null bila berhasil.
+     */
+    public function checkIn(int $staffId): ?string
+    {
+        if ($blocker = $this->checkInBlocker()) {
+            return $blocker;
+        }
+
+        $this->forceFill([
+            'status' => BookingStatus::CheckedIn,
+            'checked_in_at' => now(),
+            'checked_in_by' => $staffId,
+        ])->save();
+
+        return null;
+    }
+
+    /**
+     * BR-DP2: dibulatkan ke atas    /**
+     * BR-DP2: dibulatkan ke atas    /**
      * BR-DP2: dibulatkan ke atas ke kelipatan Rp1.000.
      */
     public function calculateDpAmount(): int
