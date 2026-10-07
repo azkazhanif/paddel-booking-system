@@ -11,6 +11,8 @@ use App\Http\Controllers\Admin\Court\CourtController as AdminCourtController;
 use App\Http\Controllers\Admin\Court\CourtPricingController as AdminCourtPricingController;
 use App\Http\Controllers\Admin\Customer\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\Dashboard\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\Schedule\SlotBlockController as AdminSlotBlockController;
+use App\Http\Controllers\Admin\Setting\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\User\UserController as AdminUserController;
 use App\Http\Controllers\Booking\BookingController;
 use App\Http\Controllers\Booking\GuestBookingController;
@@ -102,12 +104,19 @@ Route::middleware(['auth', 'role:owner,admin'])->prefix('admin')->name('admin.')
     Route::post('bookings/{booking}/cancel', AdminCancelBookingController::class)->name('bookings.cancel');
     Route::post('bookings/{booking}/check-in', AdminCheckInBookingController::class)->name('bookings.check-in');
 
+    Route::get('schedule', [AdminSlotBlockController::class, 'index'])->name('schedule.index');
+    Route::post('schedule/blocks', [AdminSlotBlockController::class, 'store'])->name('schedule.blocks.store');
+    Route::delete('schedule/blocks/{slotBlock}', [AdminSlotBlockController::class, 'destroy'])->name('schedule.blocks.destroy');
+
     Route::get('customers', [AdminCustomerController::class, 'index'])->name('customers.index');
     Route::get('customers/{user}', [AdminCustomerController::class, 'show'])->name('customers.show');
     Route::patch('customers/{user}', [AdminCustomerController::class, 'update'])->name('customers.update');
     Route::patch('customers/{user}/block', [AdminCustomerController::class, 'block'])->name('customers.block');
 
     Route::middleware('role:owner')->group(function () {
+        Route::get('settings', [AdminSettingController::class, 'edit'])->name('settings.edit');
+        Route::put('settings', [AdminSettingController::class, 'update'])->name('settings.update');
+
         Route::patch('users/{user}/toggle', [AdminUserController::class, 'toggle'])->name('users.toggle');
         Route::resource('users', AdminUserController::class)->except(['show', 'destroy']);
     });
