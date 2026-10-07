@@ -2,8 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -12,13 +16,80 @@ class ProfileTest extends TestCase
 
     public function test_profile_page_is_displayed(): void
     {
+        $user = User::factory()->create(['phone' => '6281200000001']);
+
+        $this->actingAs($user)
+            ->get('/profile')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Profile/Edit')
+                ->where('profile.email', $user->email)
+                ->where('profile.phone', '6281200000001')
+                ->where('profile.verified', true)
+                ->where('stats.bookings', 0));
+    }
+
+    public function test_phone_number_is_normalised_on_save(): void
+    {
         $user = User::factory()->create();
 
-        $response = $this
-            ->actingAs($user)
-            ->get('/profile');
+        $this->actingAs($user)
+            ->patch('/profile', ['name' => $user->name, 'email' => $user->email, 'phone' => '0812 1234 5678'])
+            ->assertSessionHasNoErrors();
 
-        $response->assertOk();
+        $this->assertSame('6281212345678', $user->refresh()->phone);
+    }
+
+    public function test_avatar_can_be_uploaded_and_removed(): void
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create();
+        $base = ['name' => $user->name, 'email' => $user->email];
+
+        $this->actingAs($user)
+            ->patch('/profile', [...$base, 'avatar' => UploadedFile::fake()->image('me.jpg')])
+            ->assertSessionHasNoErrors();
+
+        $path = $user->refresh()->avatar_path;
+        $this->assertNotNull($path);
+        Storage::disk('public')->assertExists($path);
+
+        $this->actingAs($user)->patch('/profile', [...$base, 'remove_avatar' => true]);
+
+        $this->assertNull($user->refresh()->avatar_path);
+        Storage::disk('public')->assertMissing($path);
+    }
+
+    public function test_verify_email_page_is_displayed_for_unverified_users(): void
+    {
+        $user = User::factory()->unverified()->create();
+
+        $this->actingAs($user)
+            ->get('/verify-email')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('Auth/VerifyEmail'));
+    }
+
+    public function test_confirm_password_page_is_displayed(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get('/confirm-password')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('Auth/ConfirmPassword'));
+    }
+
+    public function test_account_cannot_be_deleted_while_an_upcoming_booking_exists(): void
+    {
+        $user = User::factory()->create();
+        Booking::factory()->forMember($user)->create();
+
+        $this->actingAs($user)
+            ->from('/profile')
+            ->delete('/profile', ['password' => 'password'])
+            ->assertRedirect('/profile');
+
+        $this->assertNotNull($user->fresh());
     }
 
     public function test_profile_information_can_be_updated(): void
