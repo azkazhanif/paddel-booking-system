@@ -14,3 +14,9 @@ Schedule::call(fn () => Booking::expireStale())->everyMinute()->name('bookings:e
 
 // Pengingat WhatsApp ~1 jam sebelum jam main (lead-time diatur di pengaturan).
 Schedule::command('bookings:remind-play')->everyFiveMinutes()->name('bookings:remind-play')->withoutOverlapping();
+
+// Booking lewat jam main ditutup: lunas → selesai, DP tak dilunasi & tak datang → no-show.
+Schedule::command('bookings:close')->everyFiveMinutes()->name('bookings:close')->withoutOverlapping();
+
+// BR-DP4: pengingat pelunasan DP (H-1 dan 6 jam sebelum batas).
+Schedule::command('bookings:remind-settlement')->hourly()->name('bookings:remind-settlement')->withoutOverlapping();

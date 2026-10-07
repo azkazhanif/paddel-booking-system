@@ -13,8 +13,10 @@ use App\Enums\RefundStatus;
 use App\Enums\ReminderChannel;
 use App\Enums\ReminderType;
 use App\Enums\TransactionStatus;
+use App\Mail\BookingExpiredMail;
 use App\Mail\BookingPendingMail;
 use App\Mail\PaymentReceiptMail;
+use App\Mail\SettlementReminderMail;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -417,6 +419,122 @@ class Booking extends Model
     }
 
     /**
+     * Pemberitahuan booking kedaluwarsa beserta ajakan memesan ulang.
+     */
+    public function sendExpiredNotice(): void
+    {
+        if (! $this->customer_email) {
+            return;
+        }
+
+        $reminder = $this->reminders()->firstOrCreate(
+            ['type' => ReminderType::BookingExpired, 'channel' => ReminderChannel::Email],
+            ['sent_at' => now()],
+        );
+
+        if ($reminder->wasRecentlyCreated) {
+            Mail::to($this->customer_email)->queue(new BookingExpiredMail($this));
+        }
+    }
+
+    /**
+     * BR-DP4: pengingat pelunasan H-1 dan 6 jam sebelum batas pelunasan.
+     */
+    public function sendSettlementReminder(ReminderType $type): bool
+    {
+        if (! $this->customer_email) {
+            return false;
+        }
+
+        $reminder = $this->reminders()->firstOrCreate(
+            ['type' => $type, 'channel' => ReminderChannel::Email],
+            ['sent_at' => now()],
+        );
+
+        if (! $reminder->wasRecentlyCreated) {
+            return false;
+        }
+
+        Mail::to($this->customer_email)->queue(new SettlementReminderMail($this));
+
+        return true;
+    }
+
+    /**
+     * Booking DP yang batas pelunasannya tinggal <= $hours jam lagi dan belum lunas.
+     *
+     * @return Collection<int, self>
+     */
+    public static function dueForSettlementReminder(int $hours, ReminderType $type): Collection
+    {
+        return static::query()
+            ->with('court:id,name')
+            ->unsettled()
+            ->active()
+            ->whereNotNull('settlement_due_at')
+            ->where('settlement_due_at', '>', now())
+            ->where('settlement_due_at', '<=', now()->addHours($hours))
+            ->whereDoesntHave('reminders', fn (Builder $query) => $query
+                ->where('type', $type)
+                ->where('channel', ReminderChannel::Email))
+            ->get();
+    }
+
+    /**
+     * BR-DP6: booking DP yang tidak dilunasi dan pemainnya tidak datang sampai
+     * $graceMinutes setelah jam mulai.
+     *
+     * @return Collection<int, self>
+     */
+    public static function dueForNoShow(int $graceMinutes): Collection
+    {
+        $now = now(self::TIMEZONE);
+
+        return static::query()
+            ->with('user')
+            ->where('status', BookingStatus::Confirmed)
+            ->where('payment_status', '!=', PaymentStatus::Paid)
+            ->whereDate('date', '>=', $now->copy()->subDay()->toDateString())
+            ->whereDate('date', '<=', $now->toDateString())
+            ->get()
+            ->filter(fn (self $booking) => $booking->startsAt()->addMinutes($graceMinutes)->isPast());
+    }
+
+    /**
+     * Booking yang jam mainnya sudah lewat dan sudah lunas — ditutup sebagai selesai.
+     *
+     * @return Collection<int, self>
+     */
+    public static function dueForCompletion(): Collection
+    {
+        $now = now(self::TIMEZONE);
+
+        return static::query()
+            ->whereIn('status', [BookingStatus::Confirmed, BookingStatus::CheckedIn])
+            ->where('payment_status', PaymentStatus::Paid)
+            ->whereDate('date', '>=', $now->copy()->subDays(2)->toDateString())
+            ->whereDate('date', '<=', $now->toDateString())
+            ->get()
+            ->filter(fn (self $booking) => CarbonImmutable::parse($booking->date->format('Y-m-d').' '.$booking->end_time, self::TIMEZONE)->isPast());
+    }
+
+    /**
+     * BR-DP6: tandai no-show. DP hangus, dan no-show berulang mencabut akses DP (BR-DP8).
+     */
+    public function markNoShow(): void
+    {
+        $this->forceFill(['status' => BookingStatus::NoShow])->save();
+        $this->releaseSlots();
+        $this->payments()->open()->update(['status' => TransactionStatus::Failed]);
+        $this->user?->applyNoShowPenalty();
+    }
+
+    public function markCompleted(): void
+    {
+        $this->forceFill(['status' => BookingStatus::Completed])->save();
+    }
+
+    /**
      * Pengingat WhatsApp menjelang jam main (default 1 jam sebelum).
      */
     public function sendPlayReminder(): bool
@@ -502,9 +620,11 @@ class Booking extends Model
      */
     public static function expireStale(): void
     {
-        static::query()->expirable()->with('items')->get()->each(function (self $booking) {
+        static::query()->expirable()->with(['items', 'court:id,name'])->get()->each(function (self $booking) {
             $booking->forceFill(['status' => BookingStatus::Expired])->save();
             $booking->releaseSlots();
+            $booking->invoice?->syncFromBooking();
+            $booking->sendExpiredNotice();
         });
     }
 
@@ -540,7 +660,8 @@ class Booking extends Model
         $this->forceFill([
             'payment_option' => PaymentOption::Dp,
             'dp_amount' => $this->calculateDpAmount(),
-            'settlement_due_at' => $this->startsAt()->subHours((int) Setting::get('dp.settle_before_hours', 3)),
+            // Disimpan dalam UTC seperti kolom waktu lain; startsAt() berada di zona WIB.
+            'settlement_due_at' => $this->startsAt()->subHours((int) Setting::get('dp.settle_before_hours', 3))->utc(),
         ])->save();
     }
 

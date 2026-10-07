@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BookingStatus;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -138,6 +139,28 @@ class User extends Authenticatable implements MustVerifyEmail
             str_starts_with($digits, '8') => '62'.$digits,
             default => $digits,
         };
+    }
+
+    /**
+     * BR-DP8: member dengan no-show berulang kehilangan akses DP untuk sementara.
+     */
+    public function applyNoShowPenalty(): void
+    {
+        $windowDays = (int) Setting::get('dp.no_show_window_days', 90);
+        $limit = (int) Setting::get('dp.no_show_limit', 2);
+
+        $noShows = $this->bookings()
+            ->where('status', BookingStatus::NoShow)
+            ->whereDate('date', '>=', now(Booking::TIMEZONE)->subDays($windowDays)->toDateString())
+            ->count();
+
+        if ($noShows < $limit) {
+            return;
+        }
+
+        $this->forceFill([
+            'dp_suspended_until' => now()->addDays((int) Setting::get('dp.suspend_days', 30)),
+        ])->save();
     }
 
     /**
