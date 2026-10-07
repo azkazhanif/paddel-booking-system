@@ -208,13 +208,17 @@ class BookingController extends Controller
             return redirect()->route('booking.status', $booking->code);
         }
 
-        $booking->loadMissing(['court:id,name,type', 'items']);
+        $booking->loadMissing(['court:id,name,type', 'items', 'voucher']);
         $user = $request->user();
         $dpPercentage = (int) Setting::get('dp.percentage', 30);
 
         return Inertia::render('Booking/Checkout', [
             'booking' => $this->bookingPayload($booking) + [
                 'guest_url' => $booking->isGuest() ? $booking->guestUrl() : null,
+                'voucher' => $booking->voucher ? [
+                    'code' => $booking->voucher->code,
+                    'label' => $booking->voucher->label(),
+                ] : null,
             ],
             'dp' => [
                 'available' => $booking->canPayDp(),

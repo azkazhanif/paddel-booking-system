@@ -10,6 +10,7 @@ import {
     LayoutGrid,
     ReceiptText,
     Settings,
+    TicketPercent,
     UserCog,
     Users,
     WalletCards,
@@ -31,6 +32,7 @@ export const ADMIN_NAV = [
             { label: 'Jadwal', icon: CalendarDays, route: 'admin.schedule.index', match: 'admin.schedule.*' },
             { label: 'Lapangan', icon: LayoutGrid, route: 'admin.courts.index', match: 'admin.courts.*' },
             { label: 'Customer', icon: Users, route: 'admin.customers.index', match: 'admin.customers.*' },
+            { label: 'Voucher', icon: TicketPercent, route: 'admin.vouchers.index', match: 'admin.vouchers.*' },
         ],
     },
     {

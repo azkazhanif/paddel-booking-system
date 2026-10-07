@@ -19,9 +19,11 @@ use App\Http\Controllers\Admin\Report\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\Schedule\SlotBlockController as AdminSlotBlockController;
 use App\Http\Controllers\Admin\Setting\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\User\UserController as AdminUserController;
+use App\Http\Controllers\Admin\Voucher\VoucherController as AdminVoucherController;
 use App\Http\Controllers\Booking\BookingController;
 use App\Http\Controllers\Booking\BookingLookupController;
 use App\Http\Controllers\Booking\GuestBookingController;
+use App\Http\Controllers\Booking\VoucherController;
 use App\Http\Controllers\Court\CourtController;
 use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Invoice\InvoiceController;
@@ -66,6 +68,8 @@ Route::post('booking', [BookingController::class, 'store'])->middleware('throttl
 Route::get('booking/checkout/{booking:code}', [BookingController::class, 'checkout'])->name('booking.checkout');
 Route::post('booking/{booking:code}/pay', [PaymentController::class, 'store'])->middleware('throttle:30,60')->name('booking.pay');
 Route::get('booking/{booking:code}/status', [PaymentController::class, 'status'])->name('booking.status');
+Route::post('booking/{booking:code}/voucher', [VoucherController::class, 'store'])->name('booking.voucher.store');
+Route::delete('booking/{booking:code}/voucher', [VoucherController::class, 'destroy'])->name('booking.voucher.destroy');
 
 // Cek booking: detail tidak ditampilkan, link aksesnya dikirim ulang ke email terdaftar.
 Route::get('booking/lookup', [BookingLookupController::class, 'show'])->name('booking.lookup');
@@ -149,6 +153,9 @@ Route::middleware(['auth', 'role:owner,admin'])->prefix('admin')->name('admin.')
     Route::delete('schedule/blocks/{slotBlock}', [AdminSlotBlockController::class, 'destroy'])->name('schedule.blocks.destroy');
 
     Route::patch('bookings/{booking}/refund', [AdminRefundController::class, 'update'])->name('bookings.refund');
+
+    Route::patch('vouchers/{voucher}/toggle', [AdminVoucherController::class, 'toggle'])->name('vouchers.toggle');
+    Route::resource('vouchers', AdminVoucherController::class)->except('show');
 
     Route::get('payments', [AdminPaymentController::class, 'index'])->name('payments.index');
     Route::get('receivables', [AdminReceivableController::class, 'index'])->name('receivables.index');

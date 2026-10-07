@@ -1,5 +1,6 @@
 import BookingSummary from '@/Components/booking/BookingSummary';
 import CountdownTimer from '@/Components/booking/CountdownTimer';
+import VoucherField from '@/Components/booking/VoucherField';
 import PaymentOptionCard from '@/Components/booking/PaymentOptionCard';
 import Button from '@/Components/common/Button';
 import DetailList from '@/Components/common/DetailList';
@@ -80,7 +81,8 @@ export default function BookingCheckout({ booking, dp, snap }) {
                         <Eyebrow className="text-court-500">Checkout</Eyebrow>
                         <h1 className="mt-3 font-display text-4xl leading-none font-semibold tracking-tight md:text-5xl">Selesaikan pembayaran</h1>
                         <p className="mt-3 text-sm text-bone-50/55">
-                            Booking <span className="font-mono font-semibold text-bone-50">{booking.code}</span> — slot ditahan sampai hitung mundur habis.
+                            Booking <span className="font-mono font-semibold text-bone-50">{booking.code}</span> — slot ditahan sampai hitung mundur
+                            habis.
                         </p>
                     </header>
 
@@ -136,6 +138,10 @@ export default function BookingCheckout({ booking, dp, snap }) {
                             <ShieldCheck aria-hidden className="size-3.5" />
                             QRIS, e-wallet, virtual account, dan kartu — diproses oleh Midtrans.
                         </p>
+                    </Panel>
+
+                    <Panel title="Voucher" description="Potongan langsung memotong total tagihan sebelum pembayaran.">
+                        <VoucherField code={booking.code} voucher={booking.voucher} />
                     </Panel>
 
                     {booking.guest_url && (

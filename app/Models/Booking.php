@@ -361,6 +361,28 @@ class Booking extends Model
     }
 
     /**
+     * Pasang (atau lepas, dengan null) voucher lalu hitung ulang total & sisa tagihan.
+     * Kuota voucher baru dipotong saat bookingnya benar-benar terkonfirmasi.
+     */
+    public function applyVoucher(?Voucher $voucher): void
+    {
+        $discount = $voucher?->discountFor($this) ?? 0;
+        $total = max(0, $this->subtotal + $this->service_fee - $discount);
+
+        $this->forceFill([
+            'voucher_id' => $voucher?->id,
+            'discount' => $discount,
+            'total' => $total,
+            'remaining_amount' => max(0, $total - $this->paid_amount),
+            // Nominal DP ikut berubah mengikuti total baru.
+            'dp_amount' => $this->dp_percentage ? min($total, (int) ceil($total * $this->dp_percentage / 100 / 1000) * 1000) : 0,
+        ])->save();
+
+        $this->invoice?->syncFromBooking();
+    }
+
+    /**
+     * BR-DP2: dibulatkan ke atas    /**
      * BR-DP2: dibulatkan ke atas    /**
      * BR-DP2: dibulatkan ke atas    /**
      * BR-DP2: dibulatkan ke atas ke kelipatan Rp1.000.
@@ -413,6 +435,9 @@ class Booking extends Model
                 'confirmed_at' => $this->confirmed_at ?? now(),
                 'expires_at' => null,
             ])->save();
+
+            // Kuota voucher baru terpakai setelah ada uang masuk.
+            $this->voucher()->increment('used_count');
         }
 
         Invoice::issueFor($this);
@@ -743,6 +768,7 @@ class Booking extends Model
      */
     public function cancel(?int $cancelledBy = null, ?string $reason = null): void
     {
+        $wasConfirmed = $this->status !== BookingStatus::Pending;
         $refundable = $this->paid_amount > 0 && ($this->payment_option !== PaymentOption::Dp
             || $this->startsAt()->subHours((int) Setting::get('dp.refundable_before_hours', 24))->isFuture());
 
@@ -757,6 +783,10 @@ class Booking extends Model
         $this->releaseSlots();
         $this->payments()->open()->update(['status' => TransactionStatus::Failed]);
         $this->invoice?->syncFromBooking();
+
+        if ($wasConfirmed) {
+            $this->voucher()->where('used_count', '>', 0)->decrement('used_count');
+        }
     }
 
     /**
