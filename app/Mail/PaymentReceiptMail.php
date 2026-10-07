@@ -4,9 +4,11 @@ namespace App\Mail;
 
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
+use App\Models\Invoice;
 use App\Models\Setting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Mail\Attachment;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -14,7 +16,7 @@ use Illuminate\Queue\SerializesModels;
 
 /**
  * Bukti pembayaran ke email pemesan: dikirim saat pembayaran (penuh, DP, atau
- * pelunasan) masuk, berisi e-ticket, rincian slot, dan sisa tagihan bila ada.
+ * pelunasan) masuk, berisi e-ticket, rincian slot, sisa tagihan, dan invoice PDF.
  */
 class PaymentReceiptMail extends Mailable implements ShouldQueue
 {
@@ -35,7 +37,8 @@ class PaymentReceiptMail extends Mailable implements ShouldQueue
 
     public function content(): Content
     {
-        $this->booking->loadMissing(['court:id,name', 'items']);
+        $this->booking->loadMissing(['court:id,name', 'items', 'invoice']);
+        $invoice = $this->booking->invoice;
 
         return new Content(
             view: 'emails.payment-receipt',
@@ -47,10 +50,26 @@ class PaymentReceiptMail extends Mailable implements ShouldQueue
                     'address' => Setting::get('venue.address', ''),
                     'whatsapp' => Setting::get('venue.whatsapp', ''),
                 ],
+                'invoiceNumber' => $invoice?->number,
+                'invoiceUrl' => $invoice
+                    ? ($this->booking->isGuest() ? $invoice->signedUrl() : route('invoices.show', $invoice->number))
+                    : null,
                 'actionUrl' => $this->booking->isGuest()
                     ? $this->booking->guestUrl()
-                    : route('booking.status', $this->booking->code),
+                    : route('my-bookings.show', $this->booking->code),
             ],
         );
+    }
+
+    /**
+     * @return list<Attachment>
+     */
+    public function attachments(): array
+    {
+        $invoice = $this->booking->invoice ?? Invoice::issueFor($this->booking);
+
+        return [
+            Attachment::fromData(fn () => $invoice->pdfContents(), $invoice->fileName())->withMime('application/pdf'),
+        ];
     }
 }

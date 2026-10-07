@@ -13,6 +13,7 @@ use App\Enums\RefundStatus;
 use App\Enums\ReminderChannel;
 use App\Enums\ReminderType;
 use App\Enums\TransactionStatus;
+use App\Mail\BookingPendingMail;
 use App\Mail\PaymentReceiptMail;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -360,6 +361,8 @@ class Booking extends Model
             ])->save();
         }
 
+        Invoice::issueFor($this);
+
         $this->sendPaymentReceipt();
     }
 
@@ -390,6 +393,27 @@ class Booking extends Model
         }
 
         Mail::to($this->customer_email)->queue(new PaymentReceiptMail($this));
+    }
+
+    /**
+     * BR-G3: email "Selesaikan Pembayaran" begitu booking dibuat, sekali saja.
+     */
+    public function sendPendingPaymentNotice(): void
+    {
+        if (! $this->customer_email || $this->paid_amount > 0) {
+            return;
+        }
+
+        $reminder = $this->reminders()->firstOrCreate(
+            ['type' => ReminderType::PendingPayment, 'channel' => ReminderChannel::Email],
+            ['sent_at' => now()],
+        );
+
+        if (! $reminder->wasRecentlyCreated) {
+            return;
+        }
+
+        Mail::to($this->customer_email)->queue(new BookingPendingMail($this));
     }
 
     /**
@@ -559,6 +583,7 @@ class Booking extends Model
 
         $this->releaseSlots();
         $this->payments()->open()->update(['status' => TransactionStatus::Failed]);
+        $this->invoice?->syncFromBooking();
     }
 
     /**

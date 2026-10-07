@@ -12,12 +12,12 @@ import { formatDateLong, formatDateTime, formatRupiah, formatTimeRange } from '@
 import { loadSnap } from '@/lib/snap';
 import { safeRoute } from '@/lib/utils';
 import { router, useForm, usePage } from '@inertiajs/react';
-import { CircleSlash, MapPin, MessageCircle, Wallet } from 'lucide-react';
+import { CircleSlash, FileText, MapPin, MessageCircle, Wallet } from 'lucide-react';
 import { useState } from 'react';
 
 const TYPE_LABEL = { full: 'Bayar penuh', dp: 'DP', settlement: 'Pelunasan', offline: 'Di venue' };
 
-export default function MyBookingShow({ booking, payments, venue, snap }) {
+export default function MyBookingShow({ booking, payments, invoice, venue, snap }) {
     const { flash } = usePage().props;
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState(null);
@@ -187,6 +187,11 @@ export default function MyBookingShow({ booking, payments, venue, snap }) {
                         </Panel>
 
                         <div className="flex flex-col gap-2">
+                            {invoice && (
+                                <Button href={invoice.url} variant="outline" icon={FileText}>
+                                    Invoice {invoice.number}
+                                </Button>
+                            )}
                             <Button href={mapsUrl} variant="outline" icon={MapPin}>
                                 Petunjuk arah
                             </Button>

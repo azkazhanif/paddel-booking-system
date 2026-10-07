@@ -9,6 +9,7 @@ use App\Enums\PaymentOption;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Court;
+use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Setting;
 use App\Models\User;
@@ -186,6 +187,9 @@ class BookingController extends Controller
         }
 
         BookingPolicy::grantSessionAccess($booking);
+
+        Invoice::issueFor($booking);
+        $booking->sendPendingPaymentNotice();
 
         return redirect()->route('booking.checkout', $booking->code);
     }

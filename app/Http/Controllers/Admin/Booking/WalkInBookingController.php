@@ -12,6 +12,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Court;
+use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Setting;
 use App\Models\User;
@@ -129,6 +130,8 @@ class WalkInBookingController extends Controller
 
             return $booking;
         });
+
+        Invoice::issueFor($booking);
 
         return match ($validated['payment_method']) {
             'qris' => redirect()->route('admin.bookings.payment', $booking),

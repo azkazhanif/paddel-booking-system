@@ -10,7 +10,7 @@ import { formatDateLong, formatDateTime, formatRupiah, formatTimeRange } from '@
 import { loadSnap } from '@/lib/snap';
 import { safeRoute } from '@/lib/utils';
 import { router } from '@inertiajs/react';
-import { CalendarPlus, CircleAlert, CircleCheckBig, Clock, MessageCircle, Wallet } from 'lucide-react';
+import { CalendarPlus, CircleAlert, CircleCheckBig, Clock, FileText, MessageCircle, Wallet } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const POLL_MS = 5000;
@@ -42,7 +42,7 @@ const STATE = {
     },
 };
 
-export default function BookingStatus({ booking, payment, venue, snap }) {
+export default function BookingStatus({ booking, payment, invoice, venue, snap }) {
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState(null);
 
@@ -211,6 +211,12 @@ export default function BookingStatus({ booking, payment, venue, snap }) {
                                     ]}
                                 />
                             </Panel>
+                        )}
+
+                        {invoice && (
+                            <Button href={invoice.url} variant="outline" icon={FileText}>
+                                Lihat invoice {invoice.number}
+                            </Button>
                         )}
 
                         {venue.whatsapp && (

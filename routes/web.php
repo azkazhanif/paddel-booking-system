@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\User\UserController as AdminUserController;
 use App\Http\Controllers\Booking\BookingController;
 use App\Http\Controllers\Booking\GuestBookingController;
 use App\Http\Controllers\Home\HomeController;
+use App\Http\Controllers\Invoice\InvoiceController;
 use App\Http\Controllers\Payment\MidtransNotificationController;
 use App\Http\Controllers\Payment\PaymentController;
 use App\Http\Controllers\ProfileController;
@@ -43,6 +44,10 @@ Route::get('booking/{booking:code}/status', [PaymentController::class, 'status']
 
 // Link akses booking tamu dari email; signature Laravel menggantikan login.
 Route::get('b/{booking:code}', GuestBookingController::class)->middleware('signed')->name('booking.guest.show');
+
+// Nomor invoice mengandung garis miring (INV/PBS/2026/10/000123), jadi pola route dilebarkan.
+Route::get('invoices/{invoice:number}/pdf', [InvoiceController::class, 'pdf'])->where('invoice', 'INV/.*')->name('invoices.pdf');
+Route::get('invoices/{invoice:number}', [InvoiceController::class, 'show'])->where('invoice', 'INV/.*')->name('invoices.show');
 
 /*
 |--------------------------------------------------------------------------

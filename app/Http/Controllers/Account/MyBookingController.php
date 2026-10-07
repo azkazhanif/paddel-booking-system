@@ -6,6 +6,7 @@ use App\Enums\BookingStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Booking\BookingController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Payment\PaymentController;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\Setting;
@@ -65,7 +66,7 @@ class MyBookingController extends Controller
     {
         Gate::authorize('view', $booking);
 
-        $booking->loadMissing(['court:id,name,type', 'items', 'payments']);
+        $booking->loadMissing(['court:id,name,type', 'items', 'payments', 'invoice']);
 
         return Inertia::render('MyBookings/Show', [
             'booking' => BookingController::bookingPayload($booking) + [
@@ -82,6 +83,7 @@ class MyBookingController extends Controller
                     ...$payment->only(['order_id', 'type', 'amount', 'status', 'payment_method', 'paid_at']),
                 ])
                 ->values(),
+            'invoice' => PaymentController::invoicePayload($booking),
             'venue' => [
                 'name' => Setting::get('venue.name', 'PBS Padel Club'),
                 'address' => Setting::get('venue.address', ''),

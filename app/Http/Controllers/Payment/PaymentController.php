@@ -125,6 +125,7 @@ class PaymentController extends Controller
                 'can_settle' => $booking->payment_status === PaymentStatus::DpPaid && $booking->isPayable(),
             ],
             'payment' => $payment?->only(['order_id', 'type', 'amount', 'status', 'payment_method', 'paid_at']),
+            'invoice' => $this->invoicePayload($booking),
             'venue' => [
                 'name' => Setting::get('venue.name', 'PBS Padel Club'),
                 'address' => Setting::get('venue.address', ''),
@@ -136,6 +137,26 @@ class PaymentController extends Controller
                 'isProduction' => (bool) config('midtrans.is_production'),
             ],
         ]);
+    }
+
+    /**
+     * Tautan invoice: member lewat akunnya, tamu lewat link signed dari email.
+     *
+     * @return array{number: string, url: string, pdf_url: string}|null
+     */
+    public static function invoicePayload(Booking $booking): ?array
+    {
+        $invoice = $booking->invoice;
+
+        if (! $invoice) {
+            return null;
+        }
+
+        return [
+            'number' => $invoice->number,
+            'url' => $booking->isGuest() ? $invoice->signedUrl() : route('invoices.show', $invoice->number),
+            'pdf_url' => $booking->isGuest() ? $invoice->signedPdfUrl() : route('invoices.pdf', $invoice->number),
+        ];
     }
 
     /**
