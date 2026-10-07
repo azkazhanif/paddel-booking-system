@@ -33,8 +33,18 @@ export default function CourtsIndex({ courts }) {
             ),
         },
         { key: 'type', header: 'Tipe', cell: (court) => <span className="capitalize">{court.type}</span> },
-        { key: 'base_price', header: 'Harga dasar', align: 'right', cell: (court) => <span className="tabular-nums">{formatRupiah(court.base_price)}</span> },
-        { key: 'month_bookings_count', header: 'Booking bulan ini', align: 'right', cell: (court) => <span className="tabular-nums">{formatNumber(court.month_bookings_count)}</span> },
+        {
+            key: 'base_price',
+            header: 'Harga dasar',
+            align: 'right',
+            cell: (court) => <span className="tabular-nums">{formatRupiah(court.base_price)}</span>,
+        },
+        {
+            key: 'month_bookings_count',
+            header: 'Booking bulan ini',
+            align: 'right',
+            cell: (court) => <span className="tabular-nums">{formatNumber(court.month_bookings_count)}</span>,
+        },
         {
             key: 'is_active',
             header: 'Aktif',
@@ -55,7 +65,10 @@ export default function CourtsIndex({ courts }) {
             // ditutup untuk membuka dialog, sehingga tombol konfirmasi hapus tidak bisa diklik.
             cell: (court) => (
                 <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger className="grid size-9 place-items-center rounded-full text-bone-50/60 hover:bg-white/5 hover:text-bone-50" aria-label={`Aksi untuk ${court.name}`}>
+                    <DropdownMenuTrigger
+                        className="grid size-9 place-items-center rounded-full text-bone-50/60 hover:bg-white/5 hover:text-bone-50"
+                        aria-label={`Aksi untuk ${court.name}`}
+                    >
                         <Ellipsis className="size-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48 border-ink-700 bg-ink-800 text-bone-50">

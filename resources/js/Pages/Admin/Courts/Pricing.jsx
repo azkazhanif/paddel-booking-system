@@ -31,7 +31,11 @@ export default function CourtPricing({ court, rules, specialPrices, labels, prev
         );
 
     const addRow = (key, blank) => form.setData(key, [...form.data[key], { ...blank }]);
-    const removeRow = (key, index) => form.setData(key, form.data[key].filter((_, rowIndex) => rowIndex !== index));
+    const removeRow = (key, index) =>
+        form.setData(
+            key,
+            form.data[key].filter((_, rowIndex) => rowIndex !== index),
+        );
 
     const submit = (event) => {
         event.preventDefault();
@@ -74,7 +78,12 @@ export default function CourtPricing({ court, rules, specialPrices, labels, prev
                     bodyClassName="flex flex-col gap-4"
                 >
                     {form.data.rules.length === 0 && (
-                        <EmptyState icon={Tags} title="Belum ada aturan harga" description="Tanpa aturan, semua jam memakai harga dasar." className="py-8" />
+                        <EmptyState
+                            icon={Tags}
+                            title="Belum ada aturan harga"
+                            description="Tanpa aturan, semua jam memakai harga dasar."
+                            className="py-8"
+                        />
                     )}
 
                     {form.data.rules.map((rule, index) => (
@@ -166,7 +175,12 @@ export default function CourtPricing({ court, rules, specialPrices, labels, prev
                     bodyClassName="flex flex-col gap-4"
                 >
                     {form.data.special_prices.length === 0 && (
-                        <EmptyState icon={CalendarPlus} title="Belum ada harga khusus" description="Semua tanggal mengikuti aturan harga di atas." className="py-8" />
+                        <EmptyState
+                            icon={CalendarPlus}
+                            title="Belum ada harga khusus"
+                            description="Semua tanggal mengikuti aturan harga di atas."
+                            className="py-8"
+                        />
                     )}
 
                     {form.data.special_prices.map((special, index) => (
@@ -257,7 +271,13 @@ export default function CourtPricing({ court, rules, specialPrices, labels, prev
 
 function WeeklyPreview({ preview }) {
     if (!preview.hours.length) {
-        return <EmptyState title="Jam operasional belum diatur" description="Atur jam buka venue dulu agar preview harga bisa dihitung." className="py-8" />;
+        return (
+            <EmptyState
+                title="Jam operasional belum diatur"
+                description="Atur jam buka venue dulu agar preview harga bisa dihitung."
+                className="py-8"
+            />
+        );
     }
 
     const prices = preview.rows.flatMap((row) => row.prices).filter(Boolean);

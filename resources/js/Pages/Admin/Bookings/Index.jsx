@@ -69,7 +69,11 @@ export default function BookingsIndex({ bookings, filters, courts }) {
             key: 'remaining_amount',
             header: 'Sisa',
             align: 'right',
-            cell: (booking) => <span className={booking.remaining_amount ? 'text-amber-300 tabular-nums' : 'text-bone-50/40 tabular-nums'}>{formatRupiah(booking.remaining_amount)}</span>,
+            cell: (booking) => (
+                <span className={booking.remaining_amount ? 'text-amber-300 tabular-nums' : 'text-bone-50/40 tabular-nums'}>
+                    {formatRupiah(booking.remaining_amount)}
+                </span>
+            ),
         },
         { key: 'status', header: 'Status', cell: (booking) => <StatusBadge type="booking" value={booking.status} /> },
         { key: 'payment_status', header: 'Bayar', cell: (booking) => <StatusBadge type="payment" value={booking.payment_status} /> },
@@ -96,12 +100,35 @@ export default function BookingsIndex({ bookings, filters, courts }) {
                     showReset={active}
                     onReset={() => reset()}
                 >
-                    <Input type="date" aria-label="Dari tanggal" value={values.date_from} onChange={(event) => set('date_from', event.target.value)} className="h-10 text-sm sm:w-40" />
-                    <Input type="date" aria-label="Sampai tanggal" value={values.date_to} min={values.date_from || undefined} onChange={(event) => set('date_to', event.target.value)} className="h-10 text-sm sm:w-40" />
-                    <SelectField {...select('court_id')} aria-label="Lapangan" placeholder="Semua lapangan" options={courts.map((court) => ({ value: String(court.id), label: court.name }))} />
+                    <Input
+                        type="date"
+                        aria-label="Dari tanggal"
+                        value={values.date_from}
+                        onChange={(event) => set('date_from', event.target.value)}
+                        className="h-10 text-sm sm:w-40"
+                    />
+                    <Input
+                        type="date"
+                        aria-label="Sampai tanggal"
+                        value={values.date_to}
+                        min={values.date_from || undefined}
+                        onChange={(event) => set('date_to', event.target.value)}
+                        className="h-10 text-sm sm:w-40"
+                    />
+                    <SelectField
+                        {...select('court_id')}
+                        aria-label="Lapangan"
+                        placeholder="Semua lapangan"
+                        options={courts.map((court) => ({ value: String(court.id), label: court.name }))}
+                    />
                     <SelectField {...select('status')} aria-label="Status booking" placeholder="Semua status" options={optionsOf('booking')} />
                     <SelectField {...select('payment_status')} aria-label="Status bayar" placeholder="Status bayar" options={optionsOf('payment')} />
-                    <SelectField {...select('customer_type')} aria-label="Tipe pemesan" placeholder="Guest & member" options={optionsOf('customerType')} />
+                    <SelectField
+                        {...select('customer_type')}
+                        aria-label="Tipe pemesan"
+                        placeholder="Guest & member"
+                        options={optionsOf('customerType')}
+                    />
                     <SelectField {...select('source')} aria-label="Sumber" placeholder="Semua sumber" options={optionsOf('source')} />
                 </FilterBar>
 

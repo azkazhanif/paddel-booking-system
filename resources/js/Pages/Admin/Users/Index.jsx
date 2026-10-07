@@ -26,7 +26,9 @@ export default function UsersIndex({ users, filters, roles }) {
             header: 'Nama',
             cell: (user) => (
                 <div className="flex items-center gap-3">
-                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-court-900 text-xs font-bold text-court-400">{initials(user.name)}</span>
+                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-court-900 text-xs font-bold text-court-400">
+                        {initials(user.name)}
+                    </span>
                     <div className="min-w-0">
                         <Link href={route('admin.users.edit', user.id)} className="block truncate font-medium hover:text-court-400">
                             {user.name}
@@ -82,8 +84,22 @@ export default function UsersIndex({ users, filters, roles }) {
             />
 
             <div className="flex flex-col gap-4">
-                <FilterBar search={values.search} onSearchChange={(value) => set('search', value)} searchPlaceholder="Cari nama atau email" showReset={active} onReset={() => reset()}>
-                    <SelectField id="filter-role" size="sm" aria-label="Role" placeholder="Semua role" options={roles} value={values.role} onChange={(event) => set('role', event.target.value)} />
+                <FilterBar
+                    search={values.search}
+                    onSearchChange={(value) => set('search', value)}
+                    searchPlaceholder="Cari nama atau email"
+                    showReset={active}
+                    onReset={() => reset()}
+                >
+                    <SelectField
+                        id="filter-role"
+                        size="sm"
+                        aria-label="Role"
+                        placeholder="Semua role"
+                        options={roles}
+                        value={values.role}
+                        onChange={(event) => set('role', event.target.value)}
+                    />
                 </FilterBar>
 
                 <DataTable
@@ -100,7 +116,11 @@ export default function UsersIndex({ users, filters, roles }) {
                 open={Boolean(toggling)}
                 onOpenChange={(open) => !open && setToggling(null)}
                 title={toggling?.is_blocked ? `Aktifkan ${toggling?.name}?` : `Nonaktifkan ${toggling?.name}?`}
-                description={toggling?.is_blocked ? 'Akun bisa kembali mengakses panel sesuai role-nya.' : 'Akun tidak bisa lagi mengakses panel admin/staff sampai diaktifkan kembali.'}
+                description={
+                    toggling?.is_blocked
+                        ? 'Akun bisa kembali mengakses panel sesuai role-nya.'
+                        : 'Akun tidak bisa lagi mengakses panel admin/staff sampai diaktifkan kembali.'
+                }
                 confirmLabel={toggling?.is_blocked ? 'Aktifkan' : 'Nonaktifkan'}
                 destructive={!toggling?.is_blocked}
                 processing={processing}

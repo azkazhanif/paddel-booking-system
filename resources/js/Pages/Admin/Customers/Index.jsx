@@ -59,9 +59,23 @@ export default function CustomersIndex({ customers, filters, counts }) {
             header: isGuest ? 'Booking pertama' : 'Terdaftar',
             cell: (customer) => <span className="text-bone-50/70">{formatDate(customer.created_at)}</span>,
         },
-        { key: 'bookings_count', header: 'Booking', align: 'right', cell: (customer) => <span className="tabular-nums">{formatNumber(customer.bookings_count)}</span> },
-        { key: 'spent', header: 'Total transaksi', align: 'right', cell: (customer) => <span className="font-medium tabular-nums">{formatRupiah(Number(customer.spent ?? 0))}</span> },
-        { key: 'last_booking', header: 'Booking terakhir', cell: (customer) => <span className="text-bone-50/70">{customer.last_booking ? formatDate(customer.last_booking) : '—'}</span> },
+        {
+            key: 'bookings_count',
+            header: 'Booking',
+            align: 'right',
+            cell: (customer) => <span className="tabular-nums">{formatNumber(customer.bookings_count)}</span>,
+        },
+        {
+            key: 'spent',
+            header: 'Total transaksi',
+            align: 'right',
+            cell: (customer) => <span className="font-medium tabular-nums">{formatRupiah(Number(customer.spent ?? 0))}</span>,
+        },
+        {
+            key: 'last_booking',
+            header: 'Booking terakhir',
+            cell: (customer) => <span className="text-bone-50/70">{customer.last_booking ? formatDate(customer.last_booking) : '—'}</span>,
+        },
         !isGuest && {
             key: 'is_blocked',
             header: 'Status',
@@ -72,7 +86,10 @@ export default function CustomersIndex({ customers, filters, counts }) {
             header: <span className="sr-only">Aksi</span>,
             align: 'right',
             cell: (customer) => (
-                <Link href={route('admin.bookings.index', { search: customer.email })} className="text-sm font-medium text-court-500 hover:text-court-400">
+                <Link
+                    href={route('admin.bookings.index', { search: customer.email })}
+                    className="text-sm font-medium text-court-500 hover:text-court-400"
+                >
                     Lihat booking
                 </Link>
             ),
@@ -102,8 +119,23 @@ export default function CustomersIndex({ customers, filters, counts }) {
                     showReset={hasFilter}
                     onReset={() => reset({ tab: values.tab, search: '', segment: '', sort: 'latest' })}
                 >
-                    <SelectField id="filter-segment" size="sm" aria-label="Segmen" placeholder="Semua segmen" options={SEGMENTS} value={values.segment} onChange={(event) => set('segment', event.target.value)} />
-                    <SelectField id="filter-sort" size="sm" aria-label="Urutkan" options={SORTS} value={values.sort} onChange={(event) => set('sort', event.target.value)} />
+                    <SelectField
+                        id="filter-segment"
+                        size="sm"
+                        aria-label="Segmen"
+                        placeholder="Semua segmen"
+                        options={SEGMENTS}
+                        value={values.segment}
+                        onChange={(event) => set('segment', event.target.value)}
+                    />
+                    <SelectField
+                        id="filter-sort"
+                        size="sm"
+                        aria-label="Urutkan"
+                        options={SORTS}
+                        value={values.sort}
+                        onChange={(event) => set('sort', event.target.value)}
+                    />
                 </FilterBar>
 
                 <DataTable

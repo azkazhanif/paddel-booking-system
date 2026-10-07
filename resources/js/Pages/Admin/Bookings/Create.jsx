@@ -119,14 +119,44 @@ export default function BookingCreate({ courts, selected, availability, limits, 
                             </div>
                         </Panel>
 
-                        <Panel title="Data customer" description="Bila email atau nomornya sudah terdaftar, booking otomatis terhubung ke akun member.">
+                        <Panel
+                            title="Data customer"
+                            description="Bila email atau nomornya sudah terdaftar, booking otomatis terhubung ke akun member."
+                        >
                             <div className="grid gap-4 sm:grid-cols-2">
-                                <TextField id="customer_name" label="Nama" placeholder="Nama customer" autoComplete="off" {...field('customer_name')} />
-                                <TextField id="customer_phone" label="No. WhatsApp" placeholder="0812…" inputMode="tel" autoComplete="off" {...field('customer_phone')} />
-                                <TextField id="customer_email" label="Email (opsional)" type="email" placeholder="untuk kirim invoice & e-ticket" autoComplete="off" {...field('customer_email')} />
+                                <TextField
+                                    id="customer_name"
+                                    label="Nama"
+                                    placeholder="Nama customer"
+                                    autoComplete="off"
+                                    {...field('customer_name')}
+                                />
+                                <TextField
+                                    id="customer_phone"
+                                    label="No. WhatsApp"
+                                    placeholder="0812…"
+                                    inputMode="tel"
+                                    autoComplete="off"
+                                    {...field('customer_phone')}
+                                />
+                                <TextField
+                                    id="customer_email"
+                                    label="Email (opsional)"
+                                    type="email"
+                                    placeholder="untuk kirim invoice & e-ticket"
+                                    autoComplete="off"
+                                    {...field('customer_email')}
+                                />
                                 <TextField id="players_count" label="Jumlah pemain" type="number" min={1} max={12} {...field('players_count')} />
                             </div>
-                            <TextareaField id="notes" label="Catatan (opsional)" rows={2} className="mt-4" placeholder="Mis. minta raket sewa" {...field('notes')} />
+                            <TextareaField
+                                id="notes"
+                                label="Catatan (opsional)"
+                                rows={2}
+                                className="mt-4"
+                                placeholder="Mis. minta raket sewa"
+                                {...field('notes')}
+                            />
                         </Panel>
                     </div>
 
@@ -163,7 +193,11 @@ export default function BookingCreate({ courts, selected, availability, limits, 
                                     value="qris"
                                     icon={QrCode}
                                     title="QRIS (Midtrans)"
-                                    description={qrisEnabled ? 'Tampilkan QR di layar, customer scan dan lunas seketika.' : 'Belum aktif — isi kredensial Midtrans di .env.'}
+                                    description={
+                                        qrisEnabled
+                                            ? 'Tampilkan QR di layar, customer scan dan lunas seketika.'
+                                            : 'Belum aktif — isi kredensial Midtrans di .env.'
+                                    }
                                     disabled={!qrisEnabled}
                                     checked={form.data.payment_method === 'qris'}
                                     onChange={(value) => form.setData('payment_method', value)}

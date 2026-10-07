@@ -59,9 +59,18 @@ export default function UserForm({ user, roles }) {
                         <TextField id="phone" type="tel" label="WhatsApp" icon={Phone} placeholder="0812…" hint="Opsional" {...field('phone')} />
                     </Panel>
 
-                    <Panel title={isEdit ? 'Reset password' : 'Password'} description={isEdit ? 'Kosongkan bila tidak ingin mengubah password.' : undefined} bodyClassName="grid gap-5 md:grid-cols-2">
+                    <Panel
+                        title={isEdit ? 'Reset password' : 'Password'}
+                        description={isEdit ? 'Kosongkan bila tidak ingin mengubah password.' : undefined}
+                        bodyClassName="grid gap-5 md:grid-cols-2"
+                    >
                         <PasswordField id="password" label="Password" autoComplete="new-password" showStrength {...field('password')} />
-                        <PasswordField id="password_confirmation" label="Ulangi password" autoComplete="new-password" {...field('password_confirmation')} />
+                        <PasswordField
+                            id="password_confirmation"
+                            label="Ulangi password"
+                            autoComplete="new-password"
+                            {...field('password_confirmation')}
+                        />
                     </Panel>
                 </div>
 

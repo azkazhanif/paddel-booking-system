@@ -12,7 +12,16 @@ import StatusBadge from '@/Components/common/StatusBadge';
 import TextLink from '@/Components/common/TextLink';
 import { Input } from '@/Components/ui/input';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { formatDate, formatDateShort, formatDateTime, formatNumber, formatPercent, formatRupiah, formatRupiahShort, formatTimeRange } from '@/lib/format';
+import {
+    formatDate,
+    formatDateShort,
+    formatDateTime,
+    formatNumber,
+    formatPercent,
+    formatRupiah,
+    formatRupiahShort,
+    formatTimeRange,
+} from '@/lib/format';
 import { Link, router, usePage } from '@inertiajs/react';
 import { CalendarCheck, CalendarX, Gauge, TrendingUp, UserPlus, Wallet, WalletCards } from 'lucide-react';
 import { useState } from 'react';
@@ -41,7 +50,17 @@ const METHOD_LABELS = {
     bank_transfer: 'Transfer bank',
 };
 
-export default function Dashboard({ filters, kpis, revenueTrend, paymentMethods, courtBookings, heatmap, todayBookings, pendingPayments, topCustomers }) {
+export default function Dashboard({
+    filters,
+    kpis,
+    revenueTrend,
+    paymentMethods,
+    courtBookings,
+    heatmap,
+    todayBookings,
+    pendingPayments,
+    topCustomers,
+}) {
     const { auth } = usePage().props;
     const isOwner = auth.can.viewFinance;
     const [custom, setCustom] = useState({ from: filters.from, to: filters.to });
@@ -77,9 +96,23 @@ export default function Dashboard({ filters, kpis, revenueTrend, paymentMethods,
                             applyPeriod('custom');
                         }}
                     >
-                        <Input type="date" aria-label="Dari tanggal" value={custom.from} max={custom.to} onChange={(event) => setCustom({ ...custom, from: event.target.value })} className="h-10 w-auto text-sm" />
+                        <Input
+                            type="date"
+                            aria-label="Dari tanggal"
+                            value={custom.from}
+                            max={custom.to}
+                            onChange={(event) => setCustom({ ...custom, from: event.target.value })}
+                            className="h-10 w-auto text-sm"
+                        />
                         <span className="text-bone-50/40">–</span>
-                        <Input type="date" aria-label="Sampai tanggal" value={custom.to} min={custom.from} onChange={(event) => setCustom({ ...custom, to: event.target.value })} className="h-10 w-auto text-sm" />
+                        <Input
+                            type="date"
+                            aria-label="Sampai tanggal"
+                            value={custom.to}
+                            min={custom.from}
+                            onChange={(event) => setCustom({ ...custom, to: event.target.value })}
+                            className="h-10 w-auto text-sm"
+                        />
                         <button type="submit" className="h-10 rounded-full bg-bone-50 px-4 text-sm font-semibold text-ink-950 hover:bg-court-500">
                             Terapkan
                         </button>
@@ -136,7 +169,13 @@ export default function Dashboard({ filters, kpis, revenueTrend, paymentMethods,
                         change={kpis.bookings.change}
                     />
                 ) : (
-                    <KpiCard colSpan={{ md: 3, lg: 3 }} label="Customer baru" icon={UserPlus} value={formatNumber(kpis.new_customers.value)} change={kpis.new_customers.change} />
+                    <KpiCard
+                        colSpan={{ md: 3, lg: 3 }}
+                        label="Customer baru"
+                        icon={UserPlus}
+                        value={formatNumber(kpis.new_customers.value)}
+                        change={kpis.new_customers.change}
+                    />
                 )}
                 <KpiCard
                     colSpan={{ md: 3, lg: 3 }}
@@ -158,23 +197,43 @@ export default function Dashboard({ filters, kpis, revenueTrend, paymentMethods,
                             value={formatRupiah(kpis.average_value.value)}
                             change={kpis.average_value.change}
                         />
-                        <KpiCard colSpan={{ md: 3, lg: 4 }} label="Customer baru" icon={UserPlus} value={formatNumber(kpis.new_customers.value)} change={kpis.new_customers.change} />
+                        <KpiCard
+                            colSpan={{ md: 3, lg: 4 }}
+                            label="Customer baru"
+                            icon={UserPlus}
+                            value={formatNumber(kpis.new_customers.value)}
+                            change={kpis.new_customers.change}
+                        />
                     </>
                 )}
             </BentoGrid>
 
             <div className="grid gap-4 lg:grid-cols-12">
                 {isOwner && revenueTrend && (
-                    <Panel title="Tren pendapatan harian" description="Pembayaran berstatus settlement (DP, pelunasan, bayar penuh)." className="lg:col-span-8">
+                    <Panel
+                        title="Tren pendapatan harian"
+                        description="Pembayaran berstatus settlement (DP, pelunasan, bayar penuh)."
+                        className="lg:col-span-8"
+                    >
                         {revenueTrend.length > 1 ? (
-                            <TrendChart data={revenueTrend} label="Pendapatan" formatValue={formatRupiah} formatAxis={formatRupiahShort} formatDate={formatDateShort} />
+                            <TrendChart
+                                data={revenueTrend}
+                                label="Pendapatan"
+                                formatValue={formatRupiah}
+                                formatAxis={formatRupiahShort}
+                                formatDate={formatDateShort}
+                            />
                         ) : (
                             <p className="font-display text-5xl font-semibold tracking-tight tabular-nums">{formatRupiah(revenueTrend[0]?.value)}</p>
                         )}
                     </Panel>
                 )}
 
-                <Panel title="Booking per lapangan" description="Booking terkonfirmasi dalam periode." className={isOwner ? 'lg:col-span-4' : 'lg:col-span-5'}>
+                <Panel
+                    title="Booking per lapangan"
+                    description="Booking terkonfirmasi dalam periode."
+                    className={isOwner ? 'lg:col-span-4' : 'lg:col-span-5'}
+                >
                     {courtBookings.some((court) => court.value > 0) ? (
                         <BarList data={courtBookings} formatValue={(value) => `${formatNumber(value)} booking`} />
                     ) : (
@@ -202,7 +261,11 @@ export default function Dashboard({ filters, kpis, revenueTrend, paymentMethods,
 
                 <Panel
                     title="Booking hari ini"
-                    actions={<TextLink href={route('admin.bookings.index', { date_from: todayDate(), date_to: todayDate() })} className="text-sm">Lihat semua</TextLink>}
+                    actions={
+                        <TextLink href={route('admin.bookings.index', { date_from: todayDate(), date_to: todayDate() })} className="text-sm">
+                            Lihat semua
+                        </TextLink>
+                    }
                     className="lg:col-span-5"
                     bodyClassName="px-0 md:px-0"
                 >
@@ -210,8 +273,13 @@ export default function Dashboard({ filters, kpis, revenueTrend, paymentMethods,
                         <ul className="divide-y divide-ink-800">
                             {todayBookings.map((booking) => (
                                 <li key={booking.id}>
-                                    <Link href={route('admin.bookings.show', booking.id)} className="flex items-center gap-4 px-5 py-3 transition-colors hover:bg-white/[0.03] md:px-6">
-                                        <span className="w-24 shrink-0 font-display text-sm font-semibold tabular-nums">{formatTimeRange(booking.start_time, booking.end_time)}</span>
+                                    <Link
+                                        href={route('admin.bookings.show', booking.id)}
+                                        className="flex items-center gap-4 px-5 py-3 transition-colors hover:bg-white/[0.03] md:px-6"
+                                    >
+                                        <span className="w-24 shrink-0 font-display text-sm font-semibold tabular-nums">
+                                            {formatTimeRange(booking.start_time, booking.end_time)}
+                                        </span>
                                         <span className="min-w-0 flex-1">
                                             <span className="block truncate text-sm font-medium">{booking.customer_name}</span>
                                             <span className="block truncate text-xs text-bone-50/50">{booking.court?.name}</span>
@@ -226,12 +294,20 @@ export default function Dashboard({ filters, kpis, revenueTrend, paymentMethods,
                     )}
                 </Panel>
 
-                <Panel title="Pembayaran pending" description="Menunggu customer menyelesaikan pembayaran." className="lg:col-span-3" bodyClassName="px-0 md:px-0">
+                <Panel
+                    title="Pembayaran pending"
+                    description="Menunggu customer menyelesaikan pembayaran."
+                    className="lg:col-span-3"
+                    bodyClassName="px-0 md:px-0"
+                >
                     {pendingPayments.length ? (
                         <ul className="divide-y divide-ink-800">
                             {pendingPayments.map((payment) => (
                                 <li key={payment.id}>
-                                    <Link href={route('admin.bookings.show', payment.booking_id)} className="block px-5 py-3 transition-colors hover:bg-white/[0.03] md:px-6">
+                                    <Link
+                                        href={route('admin.bookings.show', payment.booking_id)}
+                                        className="block px-5 py-3 transition-colors hover:bg-white/[0.03] md:px-6"
+                                    >
                                         <span className="flex items-center justify-between gap-3 text-sm">
                                             <span className="truncate font-medium">{payment.booking?.customer_name}</span>
                                             <span className="font-semibold tabular-nums">{formatRupiahShort(payment.amount)}</span>
@@ -266,14 +342,19 @@ export default function Dashboard({ filters, kpis, revenueTrend, paymentMethods,
                                                 {formatNumber(customer.bookings)} booking · {customer.user_id ? 'Member' : 'Guest'}
                                             </span>
                                         </span>
-                                        {customer.spent !== null && <span className="text-sm font-semibold tabular-nums">{formatRupiahShort(customer.spent)}</span>}
+                                        {customer.spent !== null && (
+                                            <span className="text-sm font-semibold tabular-nums">{formatRupiahShort(customer.spent)}</span>
+                                        )}
                                     </>
                                 );
 
                                 return (
                                     <li key={customer.email}>
                                         {customer.user_id ? (
-                                            <Link href={route('admin.customers.show', customer.user_id)} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-white/[0.03] md:px-6">
+                                            <Link
+                                                href={route('admin.customers.show', customer.user_id)}
+                                                className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-white/[0.03] md:px-6"
+                                            >
                                                 {content}
                                             </Link>
                                         ) : (
@@ -309,10 +390,12 @@ function CompositionCard({ composition, wide }) {
                     <div key={row.label}>
                         <div className="mb-2 flex items-baseline justify-between gap-3 text-sm">
                             <span>
-                                <span className="font-semibold">{row.label}</span> <span className="text-bone-50/50 tabular-nums">{formatNumber(row.value)}</span>
+                                <span className="font-semibold">{row.label}</span>{' '}
+                                <span className="text-bone-50/50 tabular-nums">{formatNumber(row.value)}</span>
                             </span>
                             <span>
-                                <span className="text-bone-50/50 tabular-nums">{formatNumber(row.otherValue)}</span> <span className="font-semibold">{row.other}</span>
+                                <span className="text-bone-50/50 tabular-nums">{formatNumber(row.otherValue)}</span>{' '}
+                                <span className="font-semibold">{row.other}</span>
                             </span>
                         </div>
                         <div className="flex h-2 gap-0.5" role="img" aria-label={`${row.label} ${ratio}%, ${row.other} ${100 - ratio}%`}>

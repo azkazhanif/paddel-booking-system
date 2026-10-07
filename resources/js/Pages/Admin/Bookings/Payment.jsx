@@ -58,7 +58,13 @@ export default function BookingPayment({ booking, payment, error }) {
                     ) : payment?.qr_url ? (
                         <>
                             <div className="rounded-md bg-bone-50 p-4">
-                                <img src={payment.qr_url} alt={`QRIS untuk booking ${booking.code}`} width={288} height={288} className="size-72 object-contain" />
+                                <img
+                                    src={payment.qr_url}
+                                    alt={`QRIS untuk booking ${booking.code}`}
+                                    width={288}
+                                    height={288}
+                                    className="size-72 object-contain"
+                                />
                             </div>
                             <div className="text-center">
                                 <p className="font-display text-3xl font-semibold tracking-tight">{formatRupiah(payment.amount)}</p>
@@ -86,7 +92,14 @@ export default function BookingPayment({ booking, payment, error }) {
                                     { label: 'Customer', value: booking.customer_name },
                                     { label: 'Total', value: formatRupiah(booking.total) },
                                     { label: 'Sudah dibayar', value: formatRupiah(booking.paid_amount) },
-                                    { label: 'Sisa', value: <span className={booking.remaining_amount ? 'text-amber-300' : ''}>{formatRupiah(booking.remaining_amount)}</span> },
+                                    {
+                                        label: 'Sisa',
+                                        value: (
+                                            <span className={booking.remaining_amount ? 'text-amber-300' : ''}>
+                                                {formatRupiah(booking.remaining_amount)}
+                                            </span>
+                                        ),
+                                    },
                                     { label: 'Status', value: <StatusBadge type="payment" value={booking.payment_status} /> },
                                 ]}
                             />

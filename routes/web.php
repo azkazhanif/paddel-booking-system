@@ -11,6 +11,11 @@ use App\Http\Controllers\Admin\Court\CourtController as AdminCourtController;
 use App\Http\Controllers\Admin\Court\CourtPricingController as AdminCourtPricingController;
 use App\Http\Controllers\Admin\Customer\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\Dashboard\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\Invoice\InvoiceController as AdminInvoiceController;
+use App\Http\Controllers\Admin\Payment\PaymentController as AdminPaymentController;
+use App\Http\Controllers\Admin\Payment\RefundController as AdminRefundController;
+use App\Http\Controllers\Admin\Receivable\ReceivableController as AdminReceivableController;
+use App\Http\Controllers\Admin\Report\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\Schedule\SlotBlockController as AdminSlotBlockController;
 use App\Http\Controllers\Admin\Setting\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\User\UserController as AdminUserController;
@@ -143,12 +148,21 @@ Route::middleware(['auth', 'role:owner,admin'])->prefix('admin')->name('admin.')
     Route::post('schedule/blocks', [AdminSlotBlockController::class, 'store'])->name('schedule.blocks.store');
     Route::delete('schedule/blocks/{slotBlock}', [AdminSlotBlockController::class, 'destroy'])->name('schedule.blocks.destroy');
 
+    Route::patch('bookings/{booking}/refund', [AdminRefundController::class, 'update'])->name('bookings.refund');
+
+    Route::get('payments', [AdminPaymentController::class, 'index'])->name('payments.index');
+    Route::get('receivables', [AdminReceivableController::class, 'index'])->name('receivables.index');
+    Route::get('invoices', [AdminInvoiceController::class, 'index'])->name('invoices.index');
+
     Route::get('customers', [AdminCustomerController::class, 'index'])->name('customers.index');
     Route::get('customers/{user}', [AdminCustomerController::class, 'show'])->name('customers.show');
     Route::patch('customers/{user}', [AdminCustomerController::class, 'update'])->name('customers.update');
     Route::patch('customers/{user}/block', [AdminCustomerController::class, 'block'])->name('customers.block');
 
     Route::middleware('role:owner')->group(function () {
+        Route::get('reports', [AdminReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/export', [AdminReportController::class, 'export'])->name('reports.export');
+
         Route::get('settings', [AdminSettingController::class, 'edit'])->name('settings.edit');
         Route::put('settings', [AdminSettingController::class, 'update'])->name('settings.update');
 

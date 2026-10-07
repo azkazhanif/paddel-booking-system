@@ -23,12 +23,15 @@ const OFFLINE_PROVIDERS = [
     { value: 'bank_transfer', label: 'Transfer bank' },
 ];
 
+const REFUND_LABEL = { none: 'Tidak ada', requested: 'Menunggu diproses', processed: 'Sudah direfund', rejected: 'Ditolak' };
+
 export default function BookingShow({ booking, can, checkInBlocker }) {
     const [cancelOpen, setCancelOpen] = useState(false);
     const [payOpen, setPayOpen] = useState(false);
     const cancelForm = useForm({ reason: '' });
     const checkInForm = useForm({});
     const payForm = useForm({ amount: booking.remaining_amount, provider: 'cash' });
+    const refundForm = useForm({ amount: booking.paid_amount, status: 'processed' });
 
     const whatsapp = booking.customer_phone ? `https://wa.me/${booking.customer_phone}` : null;
     const paidRatio = booking.total ? Math.min(100, Math.round((booking.paid_amount / booking.total) * 100)) : 0;
@@ -61,7 +64,12 @@ export default function BookingShow({ booking, can, checkInBlocker }) {
                             </Button>
                         )}
                         {can.cancel && (
-                            <Button variant="outline" icon={XCircle} onClick={() => setCancelOpen(true)} className="text-red-300 hover:border-red-500 [--fill:var(--color-red-500)] hover:text-bone-50">
+                            <Button
+                                variant="outline"
+                                icon={XCircle}
+                                onClick={() => setCancelOpen(true)}
+                                className="text-red-300 hover:border-red-500 [--fill:var(--color-red-500)] hover:text-bone-50"
+                            >
                                 Batalkan
                             </Button>
                         )}
@@ -77,11 +85,19 @@ export default function BookingShow({ booking, can, checkInBlocker }) {
             </PageHeader>
 
             {booking.status === 'confirmed' && checkInBlocker && (
-                <div role="status" className="flex items-start gap-3 rounded-md border border-amber-400/25 bg-amber-400/10 p-4 text-sm text-amber-200">
+                <div
+                    role="status"
+                    className="flex items-start gap-3 rounded-md border border-amber-400/25 bg-amber-400/10 p-4 text-sm text-amber-200"
+                >
                     <CircleAlert aria-hidden className="mt-0.5 size-4 shrink-0" />
                     <p>
                         {checkInBlocker}
-                        {booking.remaining_amount > 0 && <> Sisa tagihan <strong className="tabular-nums">{formatRupiah(booking.remaining_amount)}</strong>.</>}
+                        {booking.remaining_amount > 0 && (
+                            <>
+                                {' '}
+                                Sisa tagihan <strong className="tabular-nums">{formatRupiah(booking.remaining_amount)}</strong>.
+                            </>
+                        )}
                     </p>
                 </div>
             )}
@@ -108,7 +124,9 @@ export default function BookingShow({ booking, can, checkInBlocker }) {
                                 <li key={item.id} className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
                                     <span className="tabular-nums">{formatTimeRange(item.start_time, item.end_time)}</span>
                                     <span className="flex items-center gap-3">
-                                        {item.price_label && <span className="text-xs text-bone-50/50 capitalize">{item.price_label.replace('_', ' ')}</span>}
+                                        {item.price_label && (
+                                            <span className="text-xs text-bone-50/50 capitalize">{item.price_label.replace('_', ' ')}</span>
+                                        )}
                                         <span className="font-medium tabular-nums">{formatRupiah(item.price)}</span>
                                     </span>
                                 </li>
@@ -124,10 +142,12 @@ export default function BookingShow({ booking, can, checkInBlocker }) {
                                     <li key={payment.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 md:px-6">
                                         <div className="min-w-0">
                                             <p className="text-sm font-medium">
-                                                {PAYMENT_TYPES[payment.type]} · {payment.payment_method?.replaceAll('_', ' ').toUpperCase() ?? PROVIDERS[payment.provider]}
+                                                {PAYMENT_TYPES[payment.type]} ·{' '}
+                                                {payment.payment_method?.replaceAll('_', ' ').toUpperCase() ?? PROVIDERS[payment.provider]}
                                             </p>
                                             <p className="text-xs text-bone-50/50">
-                                                <span className="font-mono">{payment.order_id}</span> · {formatDateTime(payment.paid_at ?? payment.created_at)}
+                                                <span className="font-mono">{payment.order_id}</span> ·{' '}
+                                                {formatDateTime(payment.paid_at ?? payment.created_at)}
                                                 {payment.recorded_by && <> · dicatat {payment.recorded_by.name}</>}
                                             </p>
                                         </div>
@@ -161,10 +181,24 @@ export default function BookingShow({ booking, can, checkInBlocker }) {
                                 booking.discount > 0 && { label: 'Diskon', value: `−${formatRupiah(booking.discount)}` },
                                 booking.service_fee > 0 && { label: 'Biaya layanan', value: formatRupiah(booking.service_fee) },
                                 { label: 'Total', value: <span className="font-display text-lg font-semibold">{formatRupiah(booking.total)}</span> },
-                                { label: 'Opsi bayar', value: booking.payment_option === 'dp' ? `DP ${booking.dp_percentage}% (${formatRupiah(booking.dp_amount)})` : 'Bayar penuh' },
+                                {
+                                    label: 'Opsi bayar',
+                                    value:
+                                        booking.payment_option === 'dp'
+                                            ? `DP ${booking.dp_percentage}% (${formatRupiah(booking.dp_amount)})`
+                                            : 'Bayar penuh',
+                                },
                                 { label: 'Sudah dibayar', value: formatRupiah(booking.paid_amount) },
-                                { label: 'Sisa', value: <span className={booking.remaining_amount ? 'text-amber-300' : ''}>{formatRupiah(booking.remaining_amount)}</span> },
-                                booking.settlement_due_at && booking.remaining_amount > 0 && { label: 'Batas pelunasan', value: formatDateTime(booking.settlement_due_at) },
+                                {
+                                    label: 'Sisa',
+                                    value: (
+                                        <span className={booking.remaining_amount ? 'text-amber-300' : ''}>
+                                            {formatRupiah(booking.remaining_amount)}
+                                        </span>
+                                    ),
+                                },
+                                booking.settlement_due_at &&
+                                    booking.remaining_amount > 0 && { label: 'Batas pelunasan', value: formatDateTime(booking.settlement_due_at) },
                                 booking.invoice && { label: 'Invoice', value: <span className="font-mono text-xs">{booking.invoice.number}</span> },
                             ]}
                         />
@@ -172,7 +206,13 @@ export default function BookingShow({ booking, can, checkInBlocker }) {
 
                     <Panel
                         title="Pemesan"
-                        actions={booking.user && <TextLink href={route('admin.customers.show', booking.user.id)} className="text-sm">Profil member</TextLink>}
+                        actions={
+                            booking.user && (
+                                <TextLink href={route('admin.customers.show', booking.user.id)} className="text-sm">
+                                    Profil member
+                                </TextLink>
+                            )
+                        }
                     >
                         <DetailList
                             items={[
@@ -188,6 +228,64 @@ export default function BookingShow({ booking, can, checkInBlocker }) {
                         )}
                     </Panel>
 
+                    {booking.paid_amount > 0 && booking.refund_status !== 'none' && (
+                        <Panel title="Refund" description="Dana dikembalikan manual; di sini hanya dicatat agar invoice & laporan menyesuaikan.">
+                            <DetailList
+                                items={[
+                                    { label: 'Status', value: REFUND_LABEL[booking.refund_status] ?? booking.refund_status },
+                                    booking.refund_amount > 0 && { label: 'Nominal direfund', value: formatRupiah(booking.refund_amount) },
+                                    { label: 'Maksimal', value: formatRupiah(booking.paid_amount) },
+                                ]}
+                            />
+                            {booking.refund_status === 'requested' && (
+                                <div className="mt-5 flex flex-col gap-3">
+                                    <TextField
+                                        id="refund_amount"
+                                        label="Nominal yang dikembalikan"
+                                        type="number"
+                                        min="1"
+                                        max={booking.paid_amount}
+                                        step="1000"
+                                        value={refundForm.data.amount}
+                                        error={refundForm.errors.amount}
+                                        onChange={(event) => refundForm.setData('amount', event.target.value)}
+                                    />
+                                    <div className="flex flex-wrap gap-2">
+                                        <Button
+                                            size="sm"
+                                            loading={refundForm.processing}
+                                            disabled={refundForm.processing}
+                                            onClick={() =>
+                                                refundForm
+                                                    .transform((data) => ({ ...data, status: 'processed' }))
+                                                    .patch(route('admin.bookings.refund', booking.id), {
+                                                        preserveScroll: true,
+                                                    })
+                                            }
+                                        >
+                                            Tandai sudah direfund
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-red-300"
+                                            disabled={refundForm.processing}
+                                            onClick={() =>
+                                                refundForm
+                                                    .transform((data) => ({ ...data, status: 'rejected' }))
+                                                    .patch(route('admin.bookings.refund', booking.id), {
+                                                        preserveScroll: true,
+                                                    })
+                                            }
+                                        >
+                                            Tolak
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </Panel>
+                    )}
+
                     <Panel title="Aktivitas">
                         <DetailList
                             items={[
@@ -195,7 +293,10 @@ export default function BookingShow({ booking, can, checkInBlocker }) {
                                 booking.created_by && { label: 'Dibuat oleh', value: booking.created_by.name },
                                 booking.confirmed_at && { label: 'Terkonfirmasi', value: formatDateTime(booking.confirmed_at) },
                                 booking.paid_at && { label: 'Lunas', value: formatDateTime(booking.paid_at) },
-                                booking.checked_in_at && { label: 'Check-in', value: `${formatDateTime(booking.checked_in_at)}${booking.checked_in_by ? ` · ${booking.checked_in_by.name}` : ''}` },
+                                booking.checked_in_at && {
+                                    label: 'Check-in',
+                                    value: `${formatDateTime(booking.checked_in_at)}${booking.checked_in_by ? ` · ${booking.checked_in_by.name}` : ''}`,
+                                },
                             ]}
                         />
                     </Panel>

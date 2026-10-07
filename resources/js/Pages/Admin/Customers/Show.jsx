@@ -61,7 +61,9 @@ export default function CustomerShow({ customer, stats, bookings, payments }) {
                 back={{ href: route('admin.customers.index'), label: 'Customer' }}
                 title={
                     <span className="flex items-center gap-4">
-                        <span className="grid size-12 shrink-0 place-items-center rounded-full bg-court-900 font-sans text-base font-bold text-court-400">{initials(customer.name)}</span>
+                        <span className="grid size-12 shrink-0 place-items-center rounded-full bg-court-900 font-sans text-base font-bold text-court-400">
+                            {initials(customer.name)}
+                        </span>
                         <span className="min-w-0 truncate">{customer.name}</span>
                     </span>
                 }
@@ -79,7 +81,9 @@ export default function CustomerShow({ customer, stats, bookings, payments }) {
                                 blockForm.setData({ is_blocked: !customer.is_blocked, blocked_reason: '' });
                                 setBlockOpen(true);
                             }}
-                            className={customer.is_blocked ? undefined : 'text-red-300 hover:border-red-500 [--fill:var(--color-red-500)] hover:text-bone-50'}
+                            className={
+                                customer.is_blocked ? undefined : 'text-red-300 hover:border-red-500 [--fill:var(--color-red-500)] hover:text-bone-50'
+                            }
                         >
                             {customer.is_blocked ? 'Buka blokir' : 'Blokir'}
                         </Button>
@@ -101,8 +105,19 @@ export default function CustomerShow({ customer, stats, bookings, payments }) {
 
             <BentoGrid className="md:auto-rows-[minmax(9rem,auto)]">
                 <KpiCard tone="green" colSpan={{ md: 3, lg: 4 }} label="Total transaksi" icon={Wallet} value={formatRupiah(stats.spent)} />
-                <KpiCard colSpan={{ md: 3, lg: 3 }} label="Booking" icon={CalendarCheck} value={formatNumber(stats.bookings)} footer={`${stats.cancelled} batal · ${stats.no_show} no-show`} />
-                <KpiCard colSpan={{ md: 3, lg: 3 }} label="Booking terakhir" icon={Clock} value={stats.last_booking ? formatDate(stats.last_booking, { day: 'numeric', month: 'short' }) : '—'} />
+                <KpiCard
+                    colSpan={{ md: 3, lg: 3 }}
+                    label="Booking"
+                    icon={CalendarCheck}
+                    value={formatNumber(stats.bookings)}
+                    footer={`${stats.cancelled} batal · ${stats.no_show} no-show`}
+                />
+                <KpiCard
+                    colSpan={{ md: 3, lg: 3 }}
+                    label="Booking terakhir"
+                    icon={Clock}
+                    value={stats.last_booking ? formatDate(stats.last_booking, { day: 'numeric', month: 'short' }) : '—'}
+                />
                 <KpiCard
                     tone={stats.outstanding ? 'forest' : 'ink'}
                     colSpan={{ md: 3, lg: 2 }}
@@ -154,7 +169,10 @@ export default function CustomerShow({ customer, stats, bookings, payments }) {
                                 { label: 'Email', value: customer.email },
                                 { label: 'WhatsApp', value: customer.phone },
                                 { label: 'Terdaftar', value: formatDate(customer.created_at) },
-                                { label: 'Email terverifikasi', value: customer.email_verified_at ? formatDate(customer.email_verified_at) : 'Belum' },
+                                {
+                                    label: 'Email terverifikasi',
+                                    value: customer.email_verified_at ? formatDate(customer.email_verified_at) : 'Belum',
+                                },
                                 { label: 'Akses DP', value: customer.can_use_dp ? 'Boleh' : 'Tidak' },
                                 customer.dp_suspended_until && { label: 'DP dicabut s.d.', value: formatDate(customer.dp_suspended_until) },
                             ]}
@@ -178,7 +196,14 @@ export default function CustomerShow({ customer, stats, bookings, payments }) {
                                 error={notesForm.errors.admin_notes}
                                 aria-label="Catatan admin"
                             />
-                            <Button type="submit" size="sm" variant="light" loading={notesForm.processing} disabled={notesForm.processing || !notesForm.isDirty} className="self-end">
+                            <Button
+                                type="submit"
+                                size="sm"
+                                variant="light"
+                                loading={notesForm.processing}
+                                disabled={notesForm.processing || !notesForm.isDirty}
+                                className="self-end"
+                            >
                                 Simpan catatan
                             </Button>
                         </form>
