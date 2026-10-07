@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Voucher;
 
 use App\Enums\VoucherType;
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Voucher;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -51,7 +52,9 @@ class VoucherController extends Controller
 
     public function store(Request $request)
     {
-        Voucher::create($this->validated($request));
+        $voucher = Voucher::create($this->validated($request));
+
+        ActivityLog::record('voucher.saved', $voucher, ['code' => $voucher->code]);
 
         return redirect()->route('admin.vouchers.index')->with('success', 'Voucher ditambahkan.');
     }
@@ -73,12 +76,16 @@ class VoucherController extends Controller
     {
         $voucher->update($this->validated($request, $voucher));
 
+        ActivityLog::record('voucher.saved', $voucher, ['code' => $voucher->code]);
+
         return redirect()->route('admin.vouchers.index')->with('success', 'Voucher diperbarui.');
     }
 
     public function destroy(Voucher $voucher)
     {
         $voucher->delete();
+
+        ActivityLog::record('voucher.deleted', $voucher, ['code' => $voucher->code]);
 
         return back()->with('success', 'Voucher dihapus.');
     }
@@ -113,8 +120,10 @@ class VoucherController extends Controller
 
         return [
             ...$validated,
-            'starts_at' => $validated['starts_at'] ? $validated['starts_at'].' 00:00:00' : null,
-            'ends_at' => $validated['ends_at'] ? $validated['ends_at'].' 23:59:59' : null,
+            'max_discount' => $validated['max_discount'] ?? null,
+            'quota' => $validated['quota'] ?? null,
+            'starts_at' => ($validated['starts_at'] ?? null) ? $validated['starts_at'].' 00:00:00' : null,
+            'ends_at' => ($validated['ends_at'] ?? null) ? $validated['ends_at'].' 23:59:59' : null,
         ];
     }
 

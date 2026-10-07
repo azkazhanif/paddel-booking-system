@@ -7,6 +7,7 @@ use App\Enums\PaymentProvider;
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Booking;
 use App\Models\Payment;
 use Illuminate\Http\Client\RequestException;
@@ -95,6 +96,11 @@ class BookingPaymentController extends Controller
                 $request->user()->id,
             );
         });
+
+        ActivityLog::record('payment.recorded', $booking, [
+            'amount' => (int) $validated['amount'],
+            'provider' => $validated['provider'],
+        ]);
 
         return redirect()->route('admin.bookings.show', $booking)->with('success', 'Pembayaran dicatat.');
     }

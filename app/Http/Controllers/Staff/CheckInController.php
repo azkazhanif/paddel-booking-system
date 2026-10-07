@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Staff;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Booking;
 use App\Models\Setting;
 use Illuminate\Http\Request;
@@ -40,6 +41,10 @@ class CheckInController extends Controller
 
             return $locked->checkIn($request->user()->id);
         });
+
+        if (! $error) {
+            ActivityLog::record('booking.checked_in', $booking);
+        }
 
         return $error
             ? back()->with('error', $error)

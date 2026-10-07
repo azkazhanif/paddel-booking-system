@@ -13,6 +13,7 @@ use App\Models\Court;
 use App\Models\Payment;
 use App\Models\Setting;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Database\Seeders\OperatingHourSeeder;
 use Database\Seeders\SettingSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -152,9 +153,12 @@ class MemberBookingTest extends TestCase
 
     public function test_dp_is_not_available_for_a_same_day_booking(): void
     {
+        // Waktu dibekukan agar slot yang dipilih selalu berada di dalam jam buka.
+        $this->travelTo(CarbonImmutable::parse('2026-10-10 08:00:00', Booking::TIMEZONE));
+
         $booking = $this->createBooking([
-            'date' => now(Booking::TIMEZONE)->toDateString(),
-            'slots' => [now(Booking::TIMEZONE)->addHours(2)->format('H:00:00')],
+            'date' => '2026-10-10',
+            'slots' => ['10:00:00'],
         ]);
 
         $this->actingAs($this->member)

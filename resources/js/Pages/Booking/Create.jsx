@@ -8,6 +8,7 @@ import Panel from '@/Components/common/Panel';
 import StatusMessage from '@/Components/common/StatusMessage';
 import CheckboxField from '@/Components/form/CheckboxField';
 import TextField from '@/Components/form/TextField';
+import TurnstileField from '@/Components/form/TurnstileField';
 import TextareaField from '@/Components/form/TextareaField';
 import { useCheckboxField, useFormField } from '@/hooks/useFormField';
 import AppLayout from '@/Layouts/AppLayout';
@@ -35,7 +36,7 @@ function saveDraft(draft) {
     }
 }
 
-export default function BookingCreate({ courts, selected, availability, limits, serviceFee, today, customer, guestEnabled, dp }) {
+export default function BookingCreate({ courts, selected, availability, limits, serviceFee, today, customer, guestEnabled, turnstileSiteKey, dp }) {
     const draft = readDraft();
     const [loadingSlots, setLoadingSlots] = useState(false);
     // Tamu memilih dulu: masuk untuk bisa DP, atau lanjut tanpa akun.
@@ -52,6 +53,7 @@ export default function BookingCreate({ courts, selected, availability, limits, 
         players_count: draft?.players_count ?? 4,
         notes: '',
         terms: false,
+        turnstile_token: '',
     });
 
     const field = useFormField(form);
@@ -105,7 +107,12 @@ export default function BookingCreate({ courts, selected, availability, limits, 
                     </header>
 
                     <Panel title="1. Tanggal main" description={`Bisa booking untuk hari ini sampai ${limits.advanceDays} hari ke depan.`}>
-                        <DateScroller from={today} days={Math.min(limits.advanceDays, 13)} value={form.data.date} onChange={(date) => reload({ date })} />
+                        <DateScroller
+                            from={today}
+                            days={Math.min(limits.advanceDays, 13)}
+                            value={form.data.date}
+                            onChange={(date) => reload({ date })}
+                        />
                         <div className="mt-4 flex flex-wrap items-end gap-3">
                             <TextField
                                 id="date"
@@ -230,7 +237,21 @@ export default function BookingCreate({ courts, selected, availability, limits, 
                                     <TextField id="players_count" label="Jumlah pemain" type="number" min={1} max={12} {...field('players_count')} />
                                 </div>
 
-                                <TextareaField id="notes" label="Catatan (opsional)" rows={2} placeholder="Mis. minta raket sewa" {...field('notes')} />
+                                <TextareaField
+                                    id="notes"
+                                    label="Catatan (opsional)"
+                                    rows={2}
+                                    placeholder="Mis. minta raket sewa"
+                                    {...field('notes')}
+                                />
+
+                                {!customer && (
+                                    <TurnstileField
+                                        siteKey={turnstileSiteKey}
+                                        error={form.errors.turnstile_token}
+                                        onToken={(token) => form.setData('turnstile_token', token)}
+                                    />
+                                )}
                             </div>
                         )}
                     </Panel>
@@ -293,7 +314,9 @@ function ChoiceCard({ icon: Icon, title, description, cta, highlight = false, di
                 disabled && 'cursor-not-allowed opacity-50 hover:border-ink-700',
             )}
         >
-            <span className={cn('grid size-9 place-items-center rounded-full', highlight ? 'bg-court-500 text-ink-950' : 'bg-white/8 text-bone-50/70')}>
+            <span
+                className={cn('grid size-9 place-items-center rounded-full', highlight ? 'bg-court-500 text-ink-950' : 'bg-white/8 text-bone-50/70')}
+            >
                 <Icon aria-hidden className="size-4" />
             </span>
             <span className="font-semibold">{title}</span>

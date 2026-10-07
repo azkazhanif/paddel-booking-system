@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Payment;
 use App\Enums\PaymentStatus;
 use App\Enums\RefundStatus;
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -47,6 +48,8 @@ class RefundController extends Controller
 
             $locked->invoice?->syncFromBooking();
         });
+
+        ActivityLog::record('payment.refunded', $booking, ['status' => $status->value, 'amount' => $validated['amount'] ?? null]);
 
         return back()->with('success', match ($status) {
             RefundStatus::Processed => 'Refund dicatat sebagai sudah diproses.',

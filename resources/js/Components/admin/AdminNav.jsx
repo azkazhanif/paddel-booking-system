@@ -9,6 +9,7 @@ import {
     LayoutDashboard,
     LayoutGrid,
     ReceiptText,
+    ScrollText,
     Settings,
     TicketPercent,
     UserCog,
@@ -49,6 +50,7 @@ export const ADMIN_NAV = [
         owner: true,
         items: [
             { label: 'Kelola User', icon: UserCog, route: 'admin.users.index', match: 'admin.users.*', owner: true },
+            { label: 'Log Aktivitas', icon: ScrollText, route: 'admin.activity.index', match: 'admin.activity.*', owner: true },
             { label: 'Pengaturan', icon: Settings, route: 'admin.settings.edit', match: 'admin.settings.*', owner: true },
         ],
     },

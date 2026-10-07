@@ -35,4 +35,47 @@ class ActivityLog extends Model
     {
         return $this->morphTo();
     }
+
+    /**
+     * Catat aksi penting (uang, akses, kebijakan). Dipanggil dari controller
+     * setelah aksinya berhasil; pencatatan tidak boleh menggagalkan aksi utama.
+     *
+     * @param  array<string, mixed>  $properties
+     */
+    public static function record(string $action, ?Model $subject = null, array $properties = []): self
+    {
+        return static::create([
+            'user_id' => auth()->id(),
+            'action' => $action,
+            'subject_type' => $subject?->getMorphClass(),
+            'subject_id' => $subject?->getKey(),
+            'properties' => $properties ?: null,
+            'ip_address' => request()->ip(),
+        ]);
+    }
+
+    /**
+     * Label aksi dalam bahasa Indonesia untuk halaman log.
+     */
+    public function label(): string
+    {
+        return match ($this->action) {
+            'payment.recorded' => 'Pembayaran dicatat',
+            'payment.refunded' => 'Refund diperbarui',
+            'booking.cancelled' => 'Booking dibatalkan',
+            'booking.checked_in' => 'Check-in',
+            'booking.walk_in' => 'Booking walk-in dibuat',
+            'settings.updated' => 'Pengaturan diubah',
+            'court.updated' => 'Lapangan diubah',
+            'court.pricing' => 'Harga lapangan diubah',
+            'schedule.blocked' => 'Slot diblokir',
+            'schedule.unblocked' => 'Blokir slot dihapus',
+            'voucher.saved' => 'Voucher disimpan',
+            'voucher.deleted' => 'Voucher dihapus',
+            'user.saved' => 'User disimpan',
+            'user.toggled' => 'Status user diubah',
+            'customer.blocked' => 'Customer diblokir/dibuka',
+            default => $this->action,
+        };
+    }
 }

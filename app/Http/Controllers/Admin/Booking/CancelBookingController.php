@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Booking;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,10 @@ class CancelBookingController extends Controller
 
             return true;
         });
+
+        if ($cancelled) {
+            ActivityLog::record('booking.cancelled', $booking, ['reason' => $validated['reason']]);
+        }
 
         return $cancelled
             ? back()->with('success', "Booking {$booking->code} dibatalkan. Proses refund (bila ada) dilakukan terpisah.")

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\Setting;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Booking;
 use App\Models\OperatingHour;
 use App\Models\Setting;
@@ -153,6 +154,8 @@ class SettingController extends Controller
                 );
             }
         });
+
+        ActivityLog::record('settings.updated', null, ['groups' => ['venue', 'booking', 'guest', 'dp', 'reminder', 'invoice', 'hours', 'closures']]);
 
         return redirect()->route('admin.settings.edit')->with('success', 'Pengaturan disimpan.');
     }

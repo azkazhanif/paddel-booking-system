@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Schedule;
 
 use App\Enums\BlockReason;
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Booking;
 use App\Models\Court;
 use App\Models\SlotBlock;
@@ -105,12 +106,20 @@ class SlotBlockController extends Controller
             ]);
         });
 
+        ActivityLog::record('schedule.blocked', null, $validated);
+
         return back()->with('success', 'Slot diblokir.');
     }
 
     public function destroy(SlotBlock $slotBlock)
     {
         $slotBlock->delete();
+
+        ActivityLog::record('schedule.unblocked', null, [
+            'court_id' => $slotBlock->court_id,
+            'date' => $slotBlock->date->toDateString(),
+            'start_time' => $slotBlock->start_time,
+        ]);
 
         return back()->with('success', 'Blokir slot dihapus.');
     }

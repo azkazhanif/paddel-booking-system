@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Account\CancelBookingController;
 use App\Http\Controllers\Account\MyBookingController;
+use App\Http\Controllers\Admin\Activity\ActivityLogController as AdminActivityLogController;
 use App\Http\Controllers\Admin\Booking\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\Booking\BookingPaymentController as AdminBookingPaymentController;
 use App\Http\Controllers\Admin\Booking\CancelBookingController as AdminCancelBookingController;
@@ -167,6 +168,8 @@ Route::middleware(['auth', 'role:owner,admin'])->prefix('admin')->name('admin.')
     Route::patch('customers/{user}/block', [AdminCustomerController::class, 'block'])->name('customers.block');
 
     Route::middleware('role:owner')->group(function () {
+        Route::get('activity', [AdminActivityLogController::class, 'index'])->name('activity.index');
+
         Route::get('reports', [AdminReportController::class, 'index'])->name('reports.index');
         Route::get('reports/export', [AdminReportController::class, 'export'])->name('reports.export');
 

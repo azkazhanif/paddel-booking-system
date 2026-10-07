@@ -19,6 +19,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -93,6 +94,7 @@ class BookingController extends Controller
             'today' => $today->toDateString(),
             'customer' => $request->user()?->only(['name', 'email', 'phone']),
             'guestEnabled' => (bool) Setting::get('guest.enabled', true),
+            'turnstileSiteKey' => self::turnstileEnabled() ? config('turnstile.site_key') : null,
             'dp' => [
                 'enabled' => (bool) Setting::get('dp.enabled', true),
                 'percentage' => (int) Setting::get('dp.percentage', 30),
@@ -126,6 +128,7 @@ class BookingController extends Controller
         ]);
 
         $this->guardBookingLimits($request, $validated['customer_email'] ?? null);
+        $this->guardTurnstile($request, $user !== null);
 
         $date = CarbonImmutable::parse($validated['date'], Booking::TIMEZONE);
         $phone = User::normalizePhone($validated['customer_phone']);
@@ -277,6 +280,46 @@ class BookingController extends Controller
     }
 
     /**
+     * Turnstile aktif hanya bila kredensialnya diisi, sehingga pengembangan lokal
+     * dan test tidak terhalang.
+     */
+    public static function turnstileEnabled(): bool
+    {
+        return filled(config('turnstile.site_key')) && filled(config('turnstile.secret'));
+    }
+
+    /**
+     * BR-G5: booking tanpa akun wajib lolos Cloudflare Turnstile.
+     */
+    protected function guardTurnstile(Request $request, bool $isMember): void
+    {
+        if ($isMember || ! self::turnstileEnabled()) {
+            return;
+        }
+
+        $token = $request->input('turnstile_token');
+
+        $failed = ValidationException::withMessages([
+            'turnstile_token' => 'Verifikasi keamanan gagal. Muat ulang halaman lalu coba lagi.',
+        ]);
+
+        if (! is_string($token) || $token === '') {
+            throw $failed;
+        }
+
+        $response = Http::asForm()->timeout(10)->post(config('turnstile.verify_url'), [
+            'secret' => config('turnstile.secret'),
+            'response' => $token,
+            'remoteip' => $request->ip(),
+        ]);
+
+        if (! $response->successful() || $response->json('success') !== true) {
+            throw $failed;
+        }
+    }
+
+    /**
+     * BR-06 & BR-G5: batasi booking pending    /**
      * BR-06 & BR-G5: batasi booking pending agar slot tidak ditahan massal, dan
      * BR-13: customer yang diblokir tidak boleh membuat booking baru.
      */
