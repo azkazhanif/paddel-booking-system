@@ -51,7 +51,7 @@ class AdminAccessTest extends TestCase
     {
         $this->actingAs(User::factory()->owner()->create())->get(route('dashboard'))->assertRedirect(route('admin.dashboard'));
         $this->actingAs(User::factory()->admin()->create())->get(route('dashboard'))->assertRedirect(route('admin.dashboard'));
-        $this->actingAs(User::factory()->create())->get(route('dashboard'))->assertRedirect(route('home'));
+        $this->actingAs(User::factory()->create())->get(route('dashboard'))->assertRedirect(route('my-bookings.index'));
     }
 
     public function test_dashboard_hides_finance_data_from_admin(): void

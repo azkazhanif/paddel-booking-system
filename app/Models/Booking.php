@@ -538,6 +538,48 @@ class Booking extends Model
     }
 
     /**
+     * Pembatalan booking (oleh member maupun staff): slot dilepas, transaksi yang
+     * masih pending dimatikan, dan refund ditandai bila sudah ada uang masuk.
+     *
+     * BR-09 & kebijakan DP: pembayaran penuh selalu bisa diajukan refund, DP hanya
+     * bila pembatalan masih di luar batas jam yang diatur.
+     */
+    public function cancel(?int $cancelledBy = null, ?string $reason = null): void
+    {
+        $refundable = $this->paid_amount > 0 && ($this->payment_option !== PaymentOption::Dp
+            || $this->startsAt()->subHours((int) Setting::get('dp.refundable_before_hours', 24))->isFuture());
+
+        $this->forceFill([
+            'status' => BookingStatus::Cancelled,
+            'cancelled_at' => now(),
+            'cancelled_by' => $cancelledBy,
+            'cancel_reason' => $reason,
+            'refund_status' => $refundable ? RefundStatus::Requested : $this->refund_status,
+        ])->save();
+
+        $this->releaseSlots();
+        $this->payments()->open()->update(['status' => TransactionStatus::Failed]);
+    }
+
+    /**
+     * BR-G7: booking tamu ditautkan ke akun begitu user login dengan email yang
+     * sama dan email tersebut sudah terverifikasi.
+     *
+     * @return int jumlah booking yang tertaut
+     */
+    public static function claimFor(User $user): int
+    {
+        if (! $user->hasVerifiedEmail()) {
+            return 0;
+        }
+
+        return static::query()
+            ->whereNull('user_id')
+            ->forEmail($user->email)
+            ->update(['user_id' => $user->id, 'customer_type' => CustomerType::Member]);
+    }
+
+    /**
      * I-9: slot non-aktif wajib NULL (bukan false) agar unique index tidak bentrok.
      */
     public function releaseSlots(): void

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Account\CancelBookingController;
+use App\Http\Controllers\Account\MyBookingController;
 use App\Http\Controllers\Admin\Booking\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\Booking\BookingPaymentController as AdminBookingPaymentController;
 use App\Http\Controllers\Admin\Booking\CancelBookingController as AdminCancelBookingController;
@@ -48,7 +50,7 @@ Route::get('b/{booking:code}', GuestBookingController::class)->middleware('signe
 |--------------------------------------------------------------------------
 */
 
-// Setelah login: owner/admin → /admin, staff → /staff, customer → /my-bookings (fallback beranda selama halamannya belum ada)
+// Setelah login: owner/admin → /admin, staff → /staff, customer → /my-bookings (fallback beranda bila halamannya belum ada)
 Route::get('/dashboard', function (Request $request) {
     $target = match (true) {
         $request->user()->canAccessAdmin() => 'admin.dashboard',
@@ -58,6 +60,12 @@ Route::get('/dashboard', function (Request $request) {
 
     return redirect()->route(Route::has($target) ? $target : 'home');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('my-bookings', [MyBookingController::class, 'index'])->name('my-bookings.index');
+    Route::get('my-bookings/{booking:code}', [MyBookingController::class, 'show'])->name('my-bookings.show');
+    Route::post('my-bookings/{booking:code}/cancel', CancelBookingController::class)->name('my-bookings.cancel');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

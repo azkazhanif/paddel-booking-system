@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Admin\Booking;
 
-use App\Enums\BookingStatus;
-use App\Enums\TransactionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use Illuminate\Http\Request;
@@ -24,16 +22,9 @@ class CancelBookingController extends Controller
                 return false;
             }
 
-            $booking->update([
-                'status' => BookingStatus::Cancelled,
-                'cancelled_at' => now(),
-                'cancelled_by' => $request->user()->id,
-                'cancel_reason' => $validated['reason'],
-            ]);
-
-            // Slot dilepas agar bisa dibooking lagi; link bayar yang masih pending tidak lagi berlaku
-            $booking->releaseSlots();
-            $booking->payments()->where('status', TransactionStatus::Pending)->update(['status' => TransactionStatus::Failed]);
+            // Slot dilepas agar bisa dibooking lagi, link bayar yang masih pending
+            // dimatikan, dan refund ditandai bila sudah ada uang masuk.
+            $booking->cancel($request->user()->id, $validated['reason']);
 
             return true;
         });
