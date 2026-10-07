@@ -10,6 +10,7 @@ import CheckboxField from '@/Components/form/CheckboxField';
 import TextField from '@/Components/form/TextField';
 import TurnstileField from '@/Components/form/TurnstileField';
 import TextareaField from '@/Components/form/TextareaField';
+import { useAvailability } from '@/hooks/useAvailability';
 import { useCheckboxField, useFormField } from '@/hooks/useFormField';
 import AppLayout from '@/Layouts/AppLayout';
 import { formatRupiah } from '@/lib/format';
@@ -71,6 +72,9 @@ export default function BookingCreate({ courts, selected, availability, limits, 
             onFinish: () => setLoadingSlots(false),
         });
     };
+
+    // Jadwal disegarkan berkala supaya slot yang baru diambil orang lain cepat terlihat.
+    useAvailability(['availability', 'courts'], { court_id: form.data.court_id, date: form.data.date });
 
     // Batas tanggal untuk input date: hari ini + jendela booking dari settings.
     const maxDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(

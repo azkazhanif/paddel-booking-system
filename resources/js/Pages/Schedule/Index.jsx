@@ -5,6 +5,7 @@ import Container from '@/Components/common/Container';
 import EmptyState from '@/Components/common/EmptyState';
 import PageHero from '@/Components/common/PageHero';
 import Section from '@/Components/common/Section';
+import { useAvailability } from '@/hooks/useAvailability';
 import PublicLayout from '@/Layouts/PublicLayout';
 import { formatDateLong, formatRupiah, formatTime } from '@/lib/format';
 import { cn, safeRoute } from '@/lib/utils';
@@ -22,6 +23,8 @@ export default function ScheduleIndex({ venue, selected, today, advanceDays, slo
     const totalOpen = schedule.reduce((sum, court) => sum + court.slots.filter((slot) => slot.status === 'available').length, 0);
 
     const changeDate = (date) => router.reload({ only: ['schedule', 'selected'], data: { date } });
+
+    useAvailability(['schedule'], { date: selected.date });
 
     return (
         <PublicLayout venue={venue}>
