@@ -3,21 +3,28 @@ import Logo from '@/Components/common/Logo';
 import { useIntro } from '@/hooks/useIntro';
 import { gsap, scrollToTarget, ScrollTrigger, useGSAP } from '@/lib/gsap';
 import { safeRoute } from '@/lib/utils';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { ArrowUpRight, Menu, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-export const NAV_LINKS = [
-    { label: 'Lapangan', href: '#courts' },
-    { label: 'Cara Booking', href: '#how' },
-    { label: 'Harga', href: '#pricing' },
-    { label: 'Member', href: '#membership' },
-    { label: 'FAQ', href: '#faq' },
-];
+/**
+ * Menu utama. Setiap item memakai halamannya sendiri bila route-nya sudah ada,
+ * dan jatuh ke anchor section homepage bila belum.
+ */
+export function navLinks() {
+    return [
+        { label: 'Lapangan', href: safeRoute('courts.index', '#courts') },
+        { label: 'Jadwal', href: safeRoute('schedule.index', '#availability') },
+        { label: 'Harga', href: safeRoute('pricing', '#pricing') },
+        { label: 'Member', href: safeRoute('membership', '#membership') },
+        { label: 'FAQ', href: safeRoute('faq', '#faq') },
+    ];
+}
 
 export default function Navbar() {
     const { auth } = usePage().props;
     const introDone = useIntro();
+    const links = navLinks();
     const ref = useRef(null);
     const menuRef = useRef(null);
     const [open, setOpen] = useState(false);
@@ -58,12 +65,17 @@ export default function Navbar() {
 
     const go = (href) => {
         setOpen(false);
-        scrollToTarget(href);
+
+        if (href.startsWith('#')) {
+            scrollToTarget(href);
+
+            return;
+        }
+
+        router.visit(href);
     };
 
-    const account = auth?.user
-        ? { label: 'Akun', href: safeRoute('dashboard') }
-        : { label: 'Masuk', href: safeRoute('login') };
+    const account = auth?.user ? { label: 'Akun', href: safeRoute('dashboard') } : { label: 'Masuk', href: safeRoute('login') };
 
     return (
         <>
@@ -74,7 +86,7 @@ export default function Navbar() {
                     </Link>
 
                     <ul className="hidden items-center gap-1 lg:flex">
-                        {NAV_LINKS.map((link) => (
+                        {links.map((link) => (
                             <li key={link.href}>
                                 <a
                                     href={link.href}
@@ -127,7 +139,7 @@ export default function Navbar() {
                         </button>
                     </div>
                     <ul className="mt-auto flex flex-col gap-1">
-                        {NAV_LINKS.map((link) => (
+                        {links.map((link) => (
                             <li key={link.href} className="overflow-hidden">
                                 <a
                                     data-menu-link

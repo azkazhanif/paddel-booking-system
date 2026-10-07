@@ -84,12 +84,7 @@ class MyBookingController extends Controller
                 ])
                 ->values(),
             'invoice' => PaymentController::invoicePayload($booking),
-            'venue' => [
-                'name' => Setting::get('venue.name', 'PBS Padel Club'),
-                'address' => Setting::get('venue.address', ''),
-                'whatsapp' => Setting::get('venue.whatsapp', ''),
-                'coordinates' => Setting::get('venue.coordinates', ['lat' => null, 'lng' => null]),
-            ],
+            'venue' => Setting::venue(),
             'snap' => [
                 'enabled' => Payment::midtransConfigured() && filled(config('midtrans.client_key')),
                 'clientKey' => config('midtrans.client_key'),

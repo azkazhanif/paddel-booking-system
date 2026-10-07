@@ -16,11 +16,14 @@ use App\Http\Controllers\Admin\Setting\SettingController as AdminSettingControll
 use App\Http\Controllers\Admin\User\UserController as AdminUserController;
 use App\Http\Controllers\Booking\BookingController;
 use App\Http\Controllers\Booking\GuestBookingController;
+use App\Http\Controllers\Court\CourtController;
 use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Invoice\InvoiceController;
+use App\Http\Controllers\Page\PageController;
 use App\Http\Controllers\Payment\MidtransNotificationController;
 use App\Http\Controllers\Payment\PaymentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Schedule\ScheduleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +34,18 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+Route::get('courts', [CourtController::class, 'index'])->name('courts.index');
+Route::get('courts/{court:slug}', [CourtController::class, 'show'])->name('courts.show');
+Route::get('schedule', [ScheduleController::class, 'index'])->name('schedule.index');
+
+Route::get('pricing', [PageController::class, 'pricing'])->name('pricing');
+Route::get('about', [PageController::class, 'about'])->name('about');
+Route::get('contact', [PageController::class, 'contact'])->name('contact');
+Route::get('faq', [PageController::class, 'faq'])->name('faq');
+Route::get('terms', [PageController::class, 'terms'])->name('terms');
+Route::get('privacy', [PageController::class, 'privacy'])->name('privacy');
+Route::get('membership', [PageController::class, 'membership'])->name('membership');
 
 /*
 |--------------------------------------------------------------------------

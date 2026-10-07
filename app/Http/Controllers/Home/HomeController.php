@@ -62,12 +62,7 @@ class HomeController extends Controller
 
         return Inertia::render('Home', [
             'canRegister' => Route::has('register'),
-            'venue' => [
-                'name' => Setting::get('venue.name', 'PBS Padel Club'),
-                'address' => Setting::get('venue.address', ''),
-                'whatsapp' => Setting::get('venue.whatsapp', ''),
-                'socials' => Setting::get('venue.socials', []),
-            ],
+            'venue' => Setting::venue(),
             'hero' => Setting::get('home.hero', ['headline' => 'Own The Court.', 'subheadline' => '']),
             'courts' => $courts,
             'pricing' => [

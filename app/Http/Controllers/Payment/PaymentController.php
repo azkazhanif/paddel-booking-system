@@ -126,11 +126,7 @@ class PaymentController extends Controller
             ],
             'payment' => $payment?->only(['order_id', 'type', 'amount', 'status', 'payment_method', 'paid_at']),
             'invoice' => $this->invoicePayload($booking),
-            'venue' => [
-                'name' => Setting::get('venue.name', 'PBS Padel Club'),
-                'address' => Setting::get('venue.address', ''),
-                'whatsapp' => Setting::get('venue.whatsapp', ''),
-            ],
+            'venue' => Setting::venue(),
             'snap' => [
                 'enabled' => Payment::midtransConfigured() && filled(config('midtrans.client_key')),
                 'clientKey' => config('midtrans.client_key'),

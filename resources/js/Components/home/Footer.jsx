@@ -2,7 +2,7 @@ import SplitHeading from '@/Components/animation/SplitHeading';
 import Container from '@/Components/common/Container';
 import Logo from '@/Components/common/Logo';
 import Section from '@/Components/common/Section';
-import { NAV_LINKS } from '@/Components/home/Navbar';
+import { navLinks } from '@/Components/home/Navbar';
 import { scrollToTarget } from '@/lib/gsap';
 import { safeRoute } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
@@ -14,6 +14,7 @@ export default function Footer({ venue = {} }) {
     ].filter((link) => link.href);
 
     const socials = Object.entries(venue.socials ?? {});
+    const links = navLinks();
 
     return (
         <Section as="footer" tone="dark" className="overflow-hidden pt-24 pb-6 md:pt-32">
@@ -23,7 +24,12 @@ export default function Footer({ venue = {} }) {
                         <Logo />
                         <p className="mt-6 max-w-sm text-bone-50/60">{venue.address}</p>
                         {venue.whatsapp && (
-                            <a href={`https://wa.me/${venue.whatsapp}`} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block font-semibold text-court-500 hover:underline">
+                            <a
+                                href={`https://wa.me/${venue.whatsapp}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-4 inline-block font-semibold text-court-500 hover:underline"
+                            >
                                 WhatsApp admin
                             </a>
                         )}
@@ -31,18 +37,24 @@ export default function Footer({ venue = {} }) {
                     <nav className="md:col-span-3" aria-label="Navigasi footer">
                         <p className="text-xs font-bold tracking-[0.2em] text-bone-50/40 uppercase">Jelajahi</p>
                         <ul className="mt-5 flex flex-col gap-3">
-                            {NAV_LINKS.map((link) => (
+                            {links.map((link) => (
                                 <li key={link.href}>
-                                    <a
-                                        href={link.href}
-                                        onClick={(event) => {
-                                            event.preventDefault();
-                                            scrollToTarget(link.href);
-                                        }}
-                                        className="text-bone-50/80 hover:text-court-500"
-                                    >
-                                        {link.label}
-                                    </a>
+                                    {link.href.startsWith('#') ? (
+                                        <a
+                                            href={link.href}
+                                            onClick={(event) => {
+                                                event.preventDefault();
+                                                scrollToTarget(link.href);
+                                            }}
+                                            className="text-bone-50/80 hover:text-court-500"
+                                        >
+                                            {link.label}
+                                        </a>
+                                    ) : (
+                                        <Link href={link.href} className="text-bone-50/80 hover:text-court-500">
+                                            {link.label}
+                                        </Link>
+                                    )}
                                 </li>
                             ))}
                         </ul>
@@ -52,7 +64,12 @@ export default function Footer({ venue = {} }) {
                         <ul className="mt-5 flex flex-col gap-3">
                             {socials.map(([name, url]) => (
                                 <li key={name}>
-                                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-bone-50/80 capitalize hover:text-court-500">
+                                    <a
+                                        href={url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-bone-50/80 capitalize hover:text-court-500"
+                                    >
                                         {name}
                                     </a>
                                 </li>
