@@ -25,7 +25,7 @@ class ProfileController extends Controller
             'status' => session('status'),
             'profile' => [
                 ...$user->only(['name', 'email', 'phone']),
-                'avatar' => $user->avatar_path ? Storage::url($user->avatar_path) : null,
+                'avatar' => $user->avatar_path ? Storage::disk('public')->url($user->avatar_path) : null,
                 'verified' => $user->hasVerifiedEmail(),
                 'can_use_dp' => $user->canUseDp(),
                 'member_since' => $user->created_at,

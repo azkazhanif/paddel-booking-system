@@ -26,6 +26,7 @@ use App\Http\Controllers\Booking\BookingLookupController;
 use App\Http\Controllers\Booking\GuestBookingController;
 use App\Http\Controllers\Booking\VoucherController;
 use App\Http\Controllers\Court\CourtController;
+use App\Http\Controllers\Cron\CronTickController;
 use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Invoice\InvoiceController;
 use App\Http\Controllers\Page\PageController;
@@ -188,5 +189,13 @@ Route::middleware(['auth', 'role:owner,admin'])->prefix('admin')->name('admin.')
 */
 
 Route::post('midtrans/notification', MidtransNotificationController::class)->name('midtrans.notification');
+
+/*
+|--------------------------------------------------------------------------
+| Cron (pengganti scheduler & queue worker di Vercel — dilindungi CRON_SECRET)
+|--------------------------------------------------------------------------
+*/
+
+Route::get('cron/tick', CronTickController::class)->name('cron.tick');
 
 require __DIR__.'/auth.php';

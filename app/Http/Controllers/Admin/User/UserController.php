@@ -26,8 +26,8 @@ class UserController extends Controller
             'users' => User::query()
                 ->internal()
                 ->when($filters['search'] ?? null, fn ($query, string $search) => $query->where(fn ($query) => $query
-                    ->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")))
+                    ->whereLike('name', "%{$search}%")
+                    ->orWhereLike('email', "%{$search}%")))
                 ->when($filters['role'] ?? null, fn ($query, string $role) => $query->where('role', $role))
                 ->orderByRaw('CASE role WHEN ? THEN 0 WHEN ? THEN 1 ELSE 2 END', [UserRole::Owner->value, UserRole::Admin->value])
                 ->orderBy('name')

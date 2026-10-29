@@ -123,9 +123,9 @@ class CustomerController extends Controller
             ->withSum(['bookings as spent' => $counted], 'paid_amount')
             ->withMax(['bookings as last_booking' => $counted], 'date')
             ->when($filters['search'] ?? null, fn (Builder $query, string $search) => $query->where(fn (Builder $query) => $query
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%")
-                ->orWhere('phone', 'like', '%'.(User::normalizePhone($search) ?? $search).'%')))
+                ->whereLike('name', "%{$search}%")
+                ->orWhereLike('email', "%{$search}%")
+                ->orWhereLike('phone', '%'.(User::normalizePhone($search) ?? $search).'%')))
             ->when($filters['segment'] ?? null, fn (Builder $query, string $segment) => match ($segment) {
                 'new' => $query->where('created_at', '>=', now()->subDays(30)),
                 'loyal' => $query->whereHas('bookings', $counted, '>=', 5),
@@ -158,9 +158,9 @@ class CustomerController extends Controller
             ->selectRaw("SUM(CASE WHEN {$counted} THEN 1 ELSE 0 END) as bookings_count", $statuses)
             ->selectRaw("SUM(CASE WHEN {$counted} THEN paid_amount ELSE 0 END) as spent", $statuses)
             ->when($filters['search'] ?? null, fn ($query, string $search) => $query->where(fn ($query) => $query
-                ->where('customer_name', 'like', "%{$search}%")
-                ->orWhere('customer_email', 'like', "%{$search}%")
-                ->orWhere('customer_phone', 'like', '%'.(User::normalizePhone($search) ?? $search).'%')))
+                ->whereLike('customer_name', "%{$search}%")
+                ->orWhereLike('customer_email', "%{$search}%")
+                ->orWhereLike('customer_phone', '%'.(User::normalizePhone($search) ?? $search).'%')))
             ->groupBy('customer_email')
             ->when($filters['segment'] ?? null, fn ($query, string $segment) => match ($segment) {
                 'new' => $query->havingRaw('MIN(created_at) >= ?', [now()->subDays(30)->toDateTimeString()]),

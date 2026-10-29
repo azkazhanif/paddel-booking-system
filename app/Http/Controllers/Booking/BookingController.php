@@ -62,7 +62,7 @@ class BookingController extends Controller
                     'type' => $court->type->value,
                     'surface' => $court->surface,
                     'base_price' => $court->base_price,
-                    'image' => $court->coverImage ? Storage::url($court->coverImage->path) : null,
+                    'image' => $court->coverImage ? Storage::disk('public')->url($court->coverImage->path) : null,
                     'available' => $slots->where('status', 'available')->count(),
                     'total' => $slots->count(),
                 ];

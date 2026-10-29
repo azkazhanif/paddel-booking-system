@@ -38,11 +38,37 @@ return [
             'report' => false,
         ],
 
-        'public' => [
+        'public' => env('SUPABASE_STORAGE_PUBLIC_BUCKET') ? [
+            // Vercel tidak punya disk persisten: foto lapangan & avatar disimpan di bucket publik Supabase.
+            'driver' => 's3',
+            'key' => env('SUPABASE_STORAGE_KEY'),
+            'secret' => env('SUPABASE_STORAGE_SECRET'),
+            'region' => env('SUPABASE_STORAGE_REGION', 'ap-southeast-1'),
+            'bucket' => env('SUPABASE_STORAGE_PUBLIC_BUCKET'),
+            'endpoint' => env('SUPABASE_URL').'/storage/v1/s3',
+            'url' => env('SUPABASE_URL').'/storage/v1/object/public/'.env('SUPABASE_STORAGE_PUBLIC_BUCKET'),
+            'use_path_style_endpoint' => true,
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ] : [
             'driver' => 'local',
             'root' => storage_path('app/public'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        // Bucket privat Supabase untuk PDF invoice (dipakai lewat FILESYSTEM_DISK=supabase).
+        'supabase' => [
+            'driver' => 's3',
+            'key' => env('SUPABASE_STORAGE_KEY'),
+            'secret' => env('SUPABASE_STORAGE_SECRET'),
+            'region' => env('SUPABASE_STORAGE_REGION', 'ap-southeast-1'),
+            'bucket' => env('SUPABASE_STORAGE_PRIVATE_BUCKET', 'private'),
+            'endpoint' => env('SUPABASE_URL').'/storage/v1/s3',
+            'use_path_style_endpoint' => true,
             'throw' => false,
             'report' => false,
         ],

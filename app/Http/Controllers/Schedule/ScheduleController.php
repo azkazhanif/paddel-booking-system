@@ -41,7 +41,7 @@ class ScheduleController extends Controller
                 'name' => $court->name,
                 'slug' => $court->slug,
                 'type' => $court->type->value,
-                'image' => $court->coverImage ? Storage::url($court->coverImage->path) : null,
+                'image' => $court->coverImage ? Storage::disk('public')->url($court->coverImage->path) : null,
                 'slots' => $court->availabilityOn($date),
             ])->values(),
         ]);

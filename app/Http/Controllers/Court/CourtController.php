@@ -40,7 +40,7 @@ class CourtController extends Controller
                     'surface' => $court->surface,
                     'description' => $court->description,
                     'facilities' => $court->facilities ?? [],
-                    'image' => $court->coverImage ? Storage::url($court->coverImage->path) : null,
+                    'image' => $court->coverImage ? Storage::disk('public')->url($court->coverImage->path) : null,
                     'price_from' => $this->priceFrom($court),
                     'today' => [
                         'available' => $slots->where('status', 'available')->count(),
@@ -82,7 +82,7 @@ class CourtController extends Controller
                 'facilities' => $court->facilities ?? [],
                 'images' => $court->images->map(fn (CourtImage $image) => [
                     'id' => $image->id,
-                    'url' => Storage::url($image->path),
+                    'url' => Storage::disk('public')->url($image->path),
                     'alt' => $image->alt ?? $court->name,
                 ])->values(),
                 'price_from' => $this->priceFrom($court),
@@ -106,7 +106,7 @@ class CourtController extends Controller
                     'name' => $other->name,
                     'slug' => $other->slug,
                     'type' => $other->type->value,
-                    'image' => $other->coverImage ? Storage::url($other->coverImage->path) : null,
+                    'image' => $other->coverImage ? Storage::disk('public')->url($other->coverImage->path) : null,
                 ])
                 ->values(),
             'today' => $today->toDateString(),

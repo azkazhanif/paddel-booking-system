@@ -38,7 +38,7 @@ class CourtController extends Controller
                     'base_price' => $court->base_price,
                     'is_active' => $court->is_active,
                     'month_bookings_count' => $court->month_bookings_count,
-                    'image' => $court->coverImage ? Storage::url($court->coverImage->path) : null,
+                    'image' => $court->coverImage ? Storage::disk('public')->url($court->coverImage->path) : null,
                 ]),
         ]);
     }
@@ -76,7 +76,7 @@ class CourtController extends Controller
                 'facilities' => $court->facilities ?? [],
                 'images' => $court->images->map(fn (CourtImage $image) => [
                     'id' => $image->id,
-                    'url' => Storage::url($image->path),
+                    'url' => Storage::disk('public')->url($image->path),
                     'alt' => $image->alt,
                 ]),
             ],

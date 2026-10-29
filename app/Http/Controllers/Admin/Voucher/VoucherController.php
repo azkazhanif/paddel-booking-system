@@ -26,7 +26,7 @@ class VoucherController extends Controller
 
         $vouchers = Voucher::query()
             ->withCount('bookings')
-            ->when($filters['search'] ?? null, fn (Builder $query, string $search) => $query->where('code', 'like', "%{$search}%"))
+            ->when($filters['search'] ?? null, fn (Builder $query, string $search) => $query->whereLike('code', "%{$search}%"))
             ->when($filters['status'] ?? null, fn (Builder $query, string $status) => match ($status) {
                 'active' => $query->where('is_active', true)->where(fn (Builder $query) => $query->whereNull('ends_at')->orWhere('ends_at', '>=', now())),
                 'inactive' => $query->where('is_active', false),

@@ -40,7 +40,7 @@ class HomeController extends Controller
                     'description' => $court->description,
                     'facilities' => $court->facilities ?? [],
                     'price_from' => min(array_filter([$court->base_price, $court->min_rule_price])),
-                    'image' => $court->coverImage ? Storage::url($court->coverImage->path) : null,
+                    'image' => $court->coverImage ? Storage::disk('public')->url($court->coverImage->path) : null,
                     'today' => [
                         'available' => $available->count(),
                         'total' => $slots->count(),

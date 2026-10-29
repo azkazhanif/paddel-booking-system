@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'cron' => [
+        'secret' => env('CRON_SECRET'),
+        'queue_max_time' => env('CRON_QUEUE_MAX_TIME', 40),
+    ],
+
 ];

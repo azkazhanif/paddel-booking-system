@@ -35,10 +35,10 @@ class ReceivableController extends Controller
             ->whereIn('status', [BookingStatus::Confirmed, BookingStatus::CheckedIn])
             ->where('remaining_amount', '>', 0)
             ->when($filters['search'] ?? null, fn (Builder $query, string $search) => $query->where(fn (Builder $query) => $query
-                ->where('code', 'like', "%{$search}%")
-                ->orWhere('customer_name', 'like', "%{$search}%")
-                ->orWhere('customer_email', 'like', "%{$search}%")
-                ->orWhere('customer_phone', 'like', '%'.(User::normalizePhone($search) ?? $search).'%')))
+                ->whereLike('code', "%{$search}%")
+                ->orWhereLike('customer_name', "%{$search}%")
+                ->orWhereLike('customer_email', "%{$search}%")
+                ->orWhereLike('customer_phone', '%'.(User::normalizePhone($search) ?? $search).'%')))
             ->when($filters['court_id'] ?? null, fn (Builder $query, int $courtId) => $query->where('court_id', $courtId));
 
         $query = match ($scope) {

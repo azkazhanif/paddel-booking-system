@@ -27,10 +27,10 @@ class InvoiceController extends Controller
         $query = Invoice::query()
             ->with('booking:id,code,date,court_id', 'booking.court:id,name')
             ->when($filters['search'] ?? null, fn (Builder $query, string $search) => $query->where(fn (Builder $query) => $query
-                ->where('number', 'like', "%{$search}%")
-                ->orWhere('billed_name', 'like', "%{$search}%")
-                ->orWhere('billed_email', 'like', "%{$search}%")
-                ->orWhereHas('booking', fn (Builder $query) => $query->where('code', 'like', "%{$search}%"))))
+                ->whereLike('number', "%{$search}%")
+                ->orWhereLike('billed_name', "%{$search}%")
+                ->orWhereLike('billed_email', "%{$search}%")
+                ->orWhereHas('booking', fn (Builder $query) => $query->whereLike('code', "%{$search}%"))))
             ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status))
             ->when($filters['date_from'] ?? null, fn (Builder $query, string $date) => $query->whereDate('issued_at', '>=', $date))
             ->when($filters['date_to'] ?? null, fn (Builder $query, string $date) => $query->whereDate('issued_at', '<=', $date));
