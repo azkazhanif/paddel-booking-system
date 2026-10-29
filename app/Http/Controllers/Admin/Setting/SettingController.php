@@ -34,7 +34,7 @@ class SettingController extends Controller
                 'booking' => [
                     'slot_duration_minutes' => (int) Setting::get('booking.slot_duration_minutes', 60),
                     'max_slots_per_booking' => (int) Setting::get('booking.max_slots_per_booking', 3),
-                    'advance_days' => (int) Setting::get('booking.advance_days', 90),
+                    'advance_days' => (int) Setting::get('booking.advance_days', 30),
                     'hold_minutes' => (int) Setting::get('booking.hold_minutes', 15),
                     'max_pending_per_user' => (int) Setting::get('booking.max_pending_per_user', 2),
                     'cancel_before_hours' => (int) Setting::get('booking.cancel_before_hours', 24),

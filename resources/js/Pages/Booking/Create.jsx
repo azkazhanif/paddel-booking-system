@@ -113,7 +113,7 @@ export default function BookingCreate({ courts, selected, availability, limits, 
                     <Panel title="1. Tanggal main" description={`Bisa booking untuk hari ini sampai ${limits.advanceDays} hari ke depan.`}>
                         <DateScroller
                             from={today}
-                            days={Math.min(limits.advanceDays, 13)}
+                            days={limits.advanceDays}
                             value={form.data.date}
                             onChange={(date) => reload({ date })}
                         />

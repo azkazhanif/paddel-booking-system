@@ -41,7 +41,7 @@ class BookingController extends Controller
             'court_id' => ['nullable', 'integer'],
         ]);
 
-        $advanceDays = (int) Setting::get('booking.advance_days', 14);
+        $advanceDays = (int) Setting::get('booking.advance_days', 30);
         $today = now(Booking::TIMEZONE)->startOfDay();
         $date = CarbonImmutable::parse($filters['date'] ?? $today->toDateString(), Booking::TIMEZONE);
         $date = $date->lt($today) || $date->gt($today->addDays($advanceDays))
@@ -107,7 +107,7 @@ class BookingController extends Controller
     {
         $user = $request->user();
         $maxSlots = (int) Setting::get('booking.max_slots_per_booking', 3);
-        $advanceDays = (int) Setting::get('booking.advance_days', 14);
+        $advanceDays = (int) Setting::get('booking.advance_days', 30);
 
         $validated = $request->validate([
             'court_id' => ['required', Rule::exists('courts', 'id')->where('is_active', true)->whereNull('deleted_at')],

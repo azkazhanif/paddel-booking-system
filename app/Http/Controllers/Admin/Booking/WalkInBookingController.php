@@ -46,7 +46,7 @@ class WalkInBookingController extends Controller
             'availability' => fn () => $court ? $this->availability($court, $date) : [],
             'limits' => [
                 'maxSlots' => (int) Setting::get('booking.max_slots_per_booking', 3),
-                'advanceDays' => (int) Setting::get('booking.advance_days', 14),
+                'advanceDays' => (int) Setting::get('booking.advance_days', 30),
                 'slotMinutes' => (int) Setting::get('booking.slot_duration_minutes', 60),
             ],
             'serviceFee' => (int) Setting::get('booking.service_fee', 0),
@@ -58,7 +58,7 @@ class WalkInBookingController extends Controller
     public function store(Request $request)
     {
         $maxSlots = (int) Setting::get('booking.max_slots_per_booking', 3);
-        $advanceDays = (int) Setting::get('booking.advance_days', 14);
+        $advanceDays = (int) Setting::get('booking.advance_days', 30);
 
         $validated = $request->validate([
             'court_id' => ['required', Rule::exists('courts', 'id')->where('is_active', true)->whereNull('deleted_at')],

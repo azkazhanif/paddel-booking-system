@@ -143,7 +143,7 @@ class PageController extends Controller
             'dp_no_show_grace_minutes' => (int) Setting::get('dp.no_show_grace_minutes', 15),
             'hold_minutes' => (int) Setting::get('booking.hold_minutes', 15),
             'cancel_before_hours' => (int) Setting::get('booking.cancel_before_hours', 24),
-            'advance_days' => (int) Setting::get('booking.advance_days', 90),
+            'advance_days' => (int) Setting::get('booking.advance_days', 30),
             'max_slots' => (int) Setting::get('booking.max_slots_per_booking', 3),
             'slot_minutes' => (int) Setting::get('booking.slot_duration_minutes', 60),
             'service_fee' => (int) Setting::get('booking.service_fee', 0),

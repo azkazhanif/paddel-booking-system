@@ -87,7 +87,7 @@ class SettingTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Settings/Edit')
                 ->where('settings.dp.percentage', 30)
-                ->where('settings.booking.advance_days', 90)
+                ->where('settings.booking.advance_days', 30)
                 ->has('hours', 7));
     }
 

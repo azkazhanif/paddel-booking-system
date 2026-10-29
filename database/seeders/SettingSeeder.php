@@ -17,7 +17,7 @@ class SettingSeeder extends Seeder
             'venue.socials' => ['instagram' => 'https://instagram.com/', 'tiktok' => 'https://tiktok.com/'],
             'booking.slot_duration_minutes' => 60,
             'booking.max_slots_per_booking' => 3,
-            'booking.advance_days' => 90,
+            'booking.advance_days' => 30,
             'booking.hold_minutes' => 15,
             'booking.max_pending_per_user' => 2,
             'booking.cancel_before_hours' => 24,

@@ -24,7 +24,7 @@ class ScheduleController extends Controller
         $filters = $request->validate(['date' => ['nullable', 'date_format:Y-m-d']]);
 
         $today = CarbonImmutable::parse(now(Booking::TIMEZONE)->toDateString(), Booking::TIMEZONE);
-        $advanceDays = (int) Setting::get('booking.advance_days', 90);
+        $advanceDays = (int) Setting::get('booking.advance_days', 30);
         $date = CarbonImmutable::parse($filters['date'] ?? $today->toDateString(), Booking::TIMEZONE);
         $date = $date->lt($today) || $date->gt($today->addDays($advanceDays)) ? $today : $date;
 

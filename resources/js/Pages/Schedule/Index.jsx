@@ -38,7 +38,7 @@ export default function ScheduleIndex({ venue, selected, today, advanceDays, slo
                 description={`Bandingkan jam kosong antar lapangan, lalu klik slotnya untuk langsung booking. Satu slot = ${slotMinutes} menit.`}
             >
                 <Reveal y={24} delay={0.3} className="mt-12">
-                    <DateScroller from={today} days={Math.min(advanceDays, 13)} value={selected.date} onChange={changeDate} />
+                    <DateScroller from={today} days={advanceDays} value={selected.date} onChange={changeDate} />
                     <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                         <p className="text-sm text-bone-50/55">
                             {formatDateLong(selected.date)} · {totalOpen} slot kosong
