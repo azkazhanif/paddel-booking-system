@@ -168,15 +168,11 @@ class MemberBookingTest extends TestCase
         $this->assertSame(PaymentOption::Full, $booking->refresh()->payment_option);
     }
 
-    public function test_member_with_unverified_email_cannot_pay_dp(): void
+    public function test_member_with_unverified_email_can_still_use_dp(): void
     {
         $this->member->forceFill(['email_verified_at' => null])->save();
 
-        $booking = $this->createBooking();
-
-        $this->actingAs($this->member)
-            ->postJson(route('booking.pay', $booking->code), ['payment_option' => 'dp'])
-            ->assertStatus(422);
+        $this->assertTrue($this->member->refresh()->canUseDp());
     }
 
     public function test_member_cannot_exceed_the_unsettled_dp_limit(): void

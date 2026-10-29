@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\BookingStatus;
 use App\Enums\UserRole;
 use Database\Factories\UserFactory;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -164,12 +163,11 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * BR-DP1 & BR-DP8: member terverifikasi, tidak diblokir, dan akses DP tidak sedang dicabut.
+     * BR-DP1 & BR-DP8: member tidak diblokir dan akses DP tidak sedang dicabut.
      */
     public function canUseDp(): bool
     {
-        return $this->hasVerifiedEmail()
-            && ! $this->is_blocked
+        return ! $this->is_blocked
             && ($this->dp_suspended_until === null || $this->dp_suspended_until->isPast());
     }
 }

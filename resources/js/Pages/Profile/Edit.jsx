@@ -11,10 +11,10 @@ import AppLayout from '@/Layouts/AppLayout';
 import { formatDate, formatRupiah } from '@/lib/format';
 import { safeRoute } from '@/lib/utils';
 import { Link, useForm, usePage } from '@inertiajs/react';
-import { BadgeCheck, Check, MailWarning, Save, TriangleAlert } from 'lucide-react';
+import { BadgeCheck, Check, Save, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
-export default function ProfileEdit({ mustVerifyEmail, status, profile, stats }) {
+export default function ProfileEdit({ status, profile, stats }) {
     const { flash } = usePage().props;
     const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -76,20 +76,7 @@ export default function ProfileEdit({ mustVerifyEmail, status, profile, stats })
 
                 {flash?.success && <StatusMessage tone="success">{flash.success}</StatusMessage>}
                 {flash?.error && <StatusMessage tone="error">{flash.error}</StatusMessage>}
-                {status === 'verification-link-sent' && <StatusMessage tone="success">Link verifikasi baru sudah dikirim ke emailmu.</StatusMessage>}
                 {status === 'password-updated' && <StatusMessage tone="success">Password diperbarui.</StatusMessage>}
-
-                {mustVerifyEmail && !profile.verified && (
-                    <div className="flex flex-col gap-3 rounded-md border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-200 sm:flex-row sm:items-center sm:justify-between">
-                        <p className="flex items-start gap-3">
-                            <MailWarning aria-hidden className="mt-0.5 size-4 shrink-0" />
-                            Email kamu belum terverifikasi, jadi opsi bayar DP masih terkunci.
-                        </p>
-                        <Button href={route('verification.notice')} variant="outline" size="sm" className="shrink-0">
-                            Verifikasi sekarang
-                        </Button>
-                    </div>
-                )}
 
                 <div className="grid gap-4 lg:grid-cols-12">
                     <div className="flex flex-col gap-4 lg:col-span-7">
@@ -125,7 +112,6 @@ export default function ProfileEdit({ mustVerifyEmail, status, profile, stats })
                                     label="Email"
                                     type="email"
                                     autoComplete="email"
-                                    hint="Mengganti email akan mencabut status verifikasi dan opsi DP sampai email baru diverifikasi."
                                     {...infoField('email')}
                                 />
 

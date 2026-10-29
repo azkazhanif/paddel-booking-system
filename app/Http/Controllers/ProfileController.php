@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,12 +20,10 @@ class ProfileController extends Controller
         $user = $request->user();
 
         return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
             'profile' => [
                 ...$user->only(['name', 'email', 'phone']),
                 'avatar' => $user->avatar_path ? Storage::disk('public')->url($user->avatar_path) : null,
-                'verified' => $user->hasVerifiedEmail(),
                 'can_use_dp' => $user->canUseDp(),
                 'member_since' => $user->created_at,
             ],

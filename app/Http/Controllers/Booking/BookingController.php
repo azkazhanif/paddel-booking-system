@@ -272,7 +272,6 @@ class BookingController extends Controller
             $booking->canPayDp() => null,
             ! (bool) Setting::get('dp.enabled', true) => 'Pembayaran DP sedang dinonaktifkan.',
             ! $user => 'Khusus member. Daftar gratis untuk bisa bayar DP.',
-            ! $user->hasVerifiedEmail() => 'Verifikasi email dulu untuk bisa bayar DP.',
             ! $user->canUseDp() => 'Akses DP untuk akun ini sedang tidak tersedia.',
             default => 'DP hanya untuk jadwal minimal H-'.(int) Setting::get('dp.min_days_ahead', 1)
                 .' dan maksimal '.(int) Setting::get('dp.max_unsettled_per_user', 2).' booking DP aktif.',

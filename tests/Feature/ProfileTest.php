@@ -25,7 +25,6 @@ class ProfileTest extends TestCase
                 ->component('Profile/Edit')
                 ->where('profile.email', $user->email)
                 ->where('profile.phone', '6281200000001')
-                ->where('profile.verified', true)
                 ->where('stats.bookings', 0));
     }
 
@@ -61,14 +60,11 @@ class ProfileTest extends TestCase
         Storage::disk('public')->assertMissing($path);
     }
 
-    public function test_verify_email_page_is_displayed_for_unverified_users(): void
+    public function test_email_verification_is_no_longer_available(): void
     {
-        $user = User::factory()->unverified()->create();
-
-        $this->actingAs($user)
+        $this->actingAs(User::factory()->unverified()->create())
             ->get('/verify-email')
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->component('Auth/VerifyEmail'));
+            ->assertNotFound();
     }
 
     public function test_confirm_password_page_is_displayed(): void

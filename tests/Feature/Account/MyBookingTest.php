@@ -50,11 +50,11 @@ class MyBookingTest extends TestCase
         $this->get(route('my-bookings.index'))->assertRedirect(route('login'));
     }
 
-    public function test_unverified_members_are_sent_to_verification(): void
+    public function test_unverified_members_can_open_their_bookings(): void
     {
         $unverified = User::factory()->unverified()->create();
 
-        $this->actingAs($unverified)->get(route('my-bookings.index'))->assertRedirect(route('verification.notice'));
+        $this->actingAs($unverified)->get(route('my-bookings.index'))->assertOk();
     }
 
     public function test_upcoming_tab_lists_active_bookings_with_their_actions(): void

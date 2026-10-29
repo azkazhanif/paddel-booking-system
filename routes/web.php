@@ -99,9 +99,9 @@ Route::get('/dashboard', function (Request $request) {
     };
 
     return redirect()->route(Route::has($target) ? $target : 'home');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware('auth')->name('dashboard');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware('auth')->group(function () {
     Route::get('my-bookings', [MyBookingController::class, 'index'])->name('my-bookings.index');
     Route::get('my-bookings/{booking:code}', [MyBookingController::class, 'show'])->name('my-bookings.show');
     Route::post('my-bookings/{booking:code}/cancel', CancelBookingController::class)->name('my-bookings.cancel');

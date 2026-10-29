@@ -45,7 +45,7 @@ export default function Terms({ venue, policy, updatedAt }) {
                       id: 'dp',
                       title: `Uang muka (DP ${policy.dp_percentage}%)`,
                       items: [
-                          `Opsi DP hanya tersedia untuk member dengan email terverifikasi dan untuk jadwal main minimal H-${policy.dp_min_days_ahead}.`,
+                          `Opsi DP hanya tersedia untuk member yang login dan untuk jadwal main minimal H-${policy.dp_min_days_ahead}.`,
                           `Nominal DP adalah ${policy.dp_percentage}% dari total, dibulatkan ke atas ke kelipatan Rp1.000.`,
                           `Sisa tagihan wajib dilunasi paling lambat ${policy.dp_settle_before_hours} jam sebelum jam main secara online, atau di lokasi sebelum check-in.`,
                           `Bila booking tidak dilunasi dan kamu tidak hadir sampai ${policy.dp_no_show_grace_minutes} menit setelah jam mulai, booking ditandai no-show dan DP hangus.`,
