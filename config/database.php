@@ -97,9 +97,10 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
-            // Pooler transaksi Supabase (port 6543) tidak mendukung prepared statement di server.
+            // Pooler transaksi Supabase (port 6543) tidak mendukung named prepared statement;
+            // DISABLE_PREPARES tetap mengirim parameter terpisah (beda dengan emulasi yang merusak boolean).
             'options' => extension_loaded('pdo_pgsql') ? [
-                PDO::ATTR_EMULATE_PREPARES => (bool) env('DB_EMULATE_PREPARES', false),
+                (defined('Pdo\Pgsql::ATTR_DISABLE_PREPARES') ? Pdo\Pgsql::ATTR_DISABLE_PREPARES : PDO::PGSQL_ATTR_DISABLE_PREPARES) => (bool) env('DB_DISABLE_PREPARES', false),
             ] : [],
         ],
 

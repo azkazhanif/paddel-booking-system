@@ -1,7 +1,7 @@
 {
     "$schema": "https://openapi.vercel.sh/vercel.json",
     "framework": null,
-    "regions": ["sin1"],
+    "regions": ["hnd1"],
     "buildCommand": "npm run build",
     "outputDirectory": "public",
     "functions": {
@@ -24,7 +24,7 @@
         "LOG_CHANNEL": "stderr",
         "DB_CONNECTION": "pgsql",
         "DB_SSLMODE": "require",
-        "DB_EMULATE_PREPARES": "true",
+        "DB_DISABLE_PREPARES": "true",
         "SESSION_DRIVER": "database",
         "CACHE_STORE": "database",
         "QUEUE_CONNECTION": "database",
