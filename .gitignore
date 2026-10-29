@@ -24,3 +24,7 @@ Homestead.yaml
 Thumbs.db
 .env.supabase
 .env.vercel
+.vercel
+.env*
+/dist
+!.env.example
