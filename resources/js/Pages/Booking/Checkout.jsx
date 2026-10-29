@@ -1,5 +1,6 @@
 import BookingSummary from '@/Components/booking/BookingSummary';
 import CountdownTimer from '@/Components/booking/CountdownTimer';
+import SandboxNotice from '@/Components/booking/SandboxNotice';
 import VoucherField from '@/Components/booking/VoucherField';
 import PaymentOptionCard from '@/Components/booking/PaymentOptionCard';
 import Button from '@/Components/common/Button';
@@ -89,6 +90,8 @@ export default function BookingCheckout({ booking, dp, snap }) {
                     <CountdownTimer until={booking.expires_at} onExpire={() => router.visit(statusUrl)} />
 
                     {error && <StatusMessage tone="error">{error}</StatusMessage>}
+
+                    <SandboxNotice snap={snap} />
 
                     <Panel title="Metode pembayaran" description="Pilih nominal yang dibayar sekarang, lalu selesaikan lewat Midtrans.">
                         <div className="flex flex-col gap-2">

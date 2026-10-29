@@ -1,5 +1,6 @@
 import BookingSummary from '@/Components/booking/BookingSummary';
 import ETicket from '@/Components/booking/ETicket';
+import SandboxNotice from '@/Components/booking/SandboxNotice';
 import Button from '@/Components/common/Button';
 import DetailList from '@/Components/common/DetailList';
 import Panel from '@/Components/common/Panel';
@@ -163,6 +164,7 @@ export default function BookingStatus({ booking, payment, invoice, venue, snap }
                             <Button icon={Wallet} loading={processing} disabled={processing} onClick={settle} className="mt-5">
                                 Lunasi sekarang
                             </Button>
+                            <SandboxNotice snap={snap} className="mt-4" />
                         </Panel>
                     )}
                 </div>

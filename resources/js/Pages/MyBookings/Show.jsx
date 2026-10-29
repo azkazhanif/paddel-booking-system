@@ -1,5 +1,6 @@
 import BookingSummary from '@/Components/booking/BookingSummary';
 import ETicket from '@/Components/booking/ETicket';
+import SandboxNotice from '@/Components/booking/SandboxNotice';
 import Button from '@/Components/common/Button';
 import ConfirmDialog from '@/Components/common/ConfirmDialog';
 import DetailList from '@/Components/common/DetailList';
@@ -117,6 +118,7 @@ export default function MyBookingShow({ booking, payments, invoice, venue, snap 
                             <Button icon={Wallet} loading={processing} disabled={processing} onClick={pay} className="mt-5">
                                 Lunasi sekarang
                             </Button>
+                            <SandboxNotice snap={snap} className="mt-4" />
                         </Panel>
                     )}
 
